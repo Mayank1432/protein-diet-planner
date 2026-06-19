@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0a0a0a">
+<title>Protein Diet Planner</title>
+<link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;Protein Planner&quot;,&quot;short_name&quot;:&quot;ProteinPlan&quot;,&quot;start_url&quot;:&quot;.&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;#0a0a0a&quot;,&quot;theme_color&quot;:&quot;#0a0a0a&quot;,&quot;icons&quot;:[{&quot;src&quot;:&quot;data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥗</text></svg>&quot;,&quot;sizes&quot;:&quot;any&quot;,&quot;type&quot;:&quot;image/svg+xml&quot;}]}">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#e5e5e5;padding:12px 16px 32px;font-size:14px;min-height:100vh}
+h1{font-size:17px;font-weight:700;margin-bottom:2px;color:#f5f5f5}
+.subtitle{font-size:12px;color:#555;margin-bottom:14px}
+/* METRICS */
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.mc{background:#1a1a1a;border-radius:12px;padding:11px 12px;border:1px solid #2a2a2a}
+.ml{font-size:11px;color:#666;margin-bottom:2px}
+.mv{font-size:19px;font-weight:700;color:#f0f0f0}
+.ms{font-size:10px;color:#555;margin-top:1px}
+/* CARDS */
+.card{background:#111;border:1px solid #222;border-radius:14px;padding:13px 15px;margin-bottom:11px}
+.stitle{font-size:11px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+/* VIEW TABS */
+.view-tabs{display:flex;gap:0;margin-bottom:14px;border:1px solid #2a2a2a;border-radius:10px;overflow:hidden;width:fit-content}
+.view-tab{padding:7px 15px;font-size:13px;cursor:pointer;background:#111;color:#666;border:none;font-weight:500;border-right:1px solid #2a2a2a;transition:all .15s}
+.view-tab:last-child{border-right:none}
+.view-tab.on{background:#1a3a1a;color:#4ade80}
+/* DAY TABS (weekly plan style) */
+.day-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.day-tab{padding:5px 12px;border:1px solid #2a2a2a;border-radius:10px;font-size:13px;cursor:pointer;background:#111;color:#777;line-height:1.5;transition:all .15s;text-align:center}
+.day-tab.on{background:#1a2a1a;color:#4ade80;border-color:#2d5a2d;font-weight:600}
+.day-tab.today-t{border-color:#4ade80}
+/* MEAL TABS */
+.meal-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.meal-tab{padding:5px 13px;border:1px solid #2a2a2a;border-radius:99px;font-size:13px;cursor:pointer;background:#111;color:#777;transition:all .15s}
+.meal-tab.on{background:#1a2a3a;color:#60a5fa;border-color:#1e3a5a;font-weight:600}
+/* BARS */
+.bar-row{display:flex;justify-content:space-between;font-size:12px;color:#666;margin-bottom:4px}
+.bar-bg{background:#1e1e1e;border-radius:99px;height:7px;margin-bottom:8px;overflow:hidden}
+.bar{height:7px;border-radius:99px;transition:width .3s}
+/* TABLE */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;margin-top:8px;min-width:600px}
+th{text-align:left;padding:6px 6px;font-size:11px;font-weight:600;color:#555;border-bottom:1px solid #222;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap}
+td{padding:5px 5px;border-bottom:1px solid #1a1a1a;color:#ddd;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#161616}
+.tfoot td{font-weight:700;border-top:1px solid #333!important;border-bottom:none!important;padding:8px 5px;font-size:12px;background:#0d0d0d;color:#f0f0f0}
+/* EDITABLE INPUTS */
+.ed{padding:3px 5px;font-size:12px;border:1px solid #2a2a2a;border-radius:5px;background:#1a1a1a;color:#f0f0f0;text-align:center;width:52px}
+.ed:focus{outline:none;border-color:#4ade80;box-shadow:0 0 0 2px rgba(74,222,128,.1)}
+.ed.wide{width:100px;text-align:left}
+.ed-sel{padding:3px 4px;font-size:11px;border:1px solid #2a2a2a;border-radius:5px;background:#1a1a1a;color:#aaa}
+.ed-sel:focus{outline:none;border-color:#4ade80}
+/* QTY ROW (weekly plan style) */
+.qrow{display:flex;align-items:center;gap:5px}
+.qbtn{width:26px;height:26px;border:1px solid #333;border-radius:7px;background:#1a1a1a;color:#ccc;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;user-select:none;transition:all .12s}
+.qbtn:hover:not(:disabled){background:#2a2a2a;border-color:#444;color:#fff}
+.qbtn:disabled{opacity:.25;cursor:not-allowed}
+.qty-inp{width:56px;padding:4px 5px;font-size:13px;border:1px solid #333;border-radius:7px;background:#1a1a1a;color:#f0f0f0;text-align:center;font-weight:500}
+.qty-inp:focus{outline:none;border-color:#4ade80;box-shadow:0 0 0 2px rgba(74,222,128,.1)}
+.unit-lbl{font-size:12px;color:#555;flex-shrink:0}
+/* BADGES */
+.badge{display:inline-block;font-size:11px;padding:2px 7px;border-radius:99px;font-weight:500}
+.bp{background:#0d2137;color:#60a5fa}
+.bv{background:#0d2010;color:#4ade80}
+.ftag{display:inline-block;font-size:10px;padding:1px 5px;border-radius:99px;background:#1e1e1e;color:#555;border:1px solid #2a2a2a;margin-left:3px;vertical-align:middle}
+/* BUTTONS */
+.delbtn{background:none;border:none;cursor:pointer;color:#444;padding:2px 5px;border-radius:5px;font-size:13px;transition:all .15s}
+.delbtn:hover{color:#f87171;background:#2a1010}
+.small-btn{padding:4px 10px;font-size:12px;border:1px solid #2a2a2a;border-radius:6px;background:#1a1a1a;color:#888;cursor:pointer;transition:all .15s;white-space:nowrap}
+.small-btn:hover{background:#2a2a2a;color:#e0e0e0}
+.small-btn.green{border-color:#2d5a2d;background:#1a3a1a;color:#4ade80}
+.small-btn.green:hover{background:#243a24}
+.small-btn.amber{border-color:#5a3a0d;background:#2a1a0d;color:#fbbf24}
+.abtn{padding:7px 14px;font-size:13px;border:1px solid #2d5a2d;border-radius:8px;background:#1a3a1a;color:#4ade80;cursor:pointer;font-weight:600}
+.abtn:hover{background:#243a24}
+/* FORMS */
+.add-panel{border:1px dashed #2a2a2a;border-radius:12px;padding:13px;margin-top:11px;background:#0d0d0d}
+.ig{display:grid;gap:7px;margin-bottom:7px}
+.ig2{grid-template-columns:1fr 1fr}
+.ig3{grid-template-columns:1fr 1fr 1fr}
+.ig4{grid-template-columns:1fr 1fr 1fr 1fr}
+.fl{font-size:11px;color:#666;margin-bottom:3px;font-weight:500}
+.inp{width:100%;padding:6px 9px;font-size:13px;border:1px solid #2a2a2a;border-radius:8px;background:#1a1a1a;color:#e0e0e0}
+.inp:focus{outline:none;border-color:#4ade80}
+.add-bottom{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.err{font-size:11px;color:#f87171}
+.lib-pill{font-size:12px;padding:3px 10px;border:1px solid #2a2a2a;border-radius:99px;background:#1a1a1a;color:#888;cursor:pointer;transition:all .15s}
+.lib-pill:hover{background:#1a3a1a;color:#4ade80;border-color:#2d5a2d}
+.divider{border:none;border-top:1px solid #1e1e1e;margin:9px 0}
+.saved-badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;background:#1a3a1a;color:#4ade80;border:1px solid #2d5a2d;margin-left:6px}
+.dim td{color:#3a3a3a}
+/* STAPLE ROWS */
+.cb-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #1a1a1a;flex-wrap:wrap}
+.cb-row:last-child{border-bottom:none}
+.cb-row input[type=checkbox]{width:16px;height:16px;accent-color:#4ade80;cursor:pointer;flex-shrink:0}
+.cb-label{font-size:13px;color:#aaa;min-width:80px}
+.cb-unit{font-size:11px;color:#555}
+.cb-macro{font-size:11px;color:#555;margin-left:auto}
+.cb-meal-sel{padding:3px 5px;font-size:11px;border:1px solid #2a2a2a;border-radius:5px;background:#1a1a1a;color:#888}
+/* MEAL SECTION */
+.meal-section{margin-bottom:10px}
+.meal-hdr{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px 10px 0 0;cursor:pointer;user-select:none}
+.meal-hdr.coll{border-radius:10px}
+.meal-body{background:#0f0f0f;border:1px solid #2a2a2a;border-top:none;border-radius:0 0 10px 10px;padding:11px 13px}
+.dish-hdr{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+.dish-name{font-size:13px;font-weight:600;color:#ccc}
+.ingr-row-d{display:flex;align-items:center;gap:6px;padding:3px 0 3px 10px;border-bottom:1px solid #111;font-size:12px;color:#888;flex-wrap:wrap}
+.ingr-row-d:last-child{border-bottom:none}
+.ingr-form{background:#0a0a0a;border:1px solid #1e1e1e;border-radius:8px;padding:10px;margin-top:6px}
+.ingr-r{display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin-bottom:5px}
+.ii{flex:1;min-width:80px;padding:4px 7px;font-size:12px;border:1px solid #2a2a2a;border-radius:6px;background:#1a1a1a;color:#e0e0e0}
+.ii:focus{outline:none;border-color:#60a5fa}
+.in{width:52px;padding:4px 5px;font-size:12px;border:1px solid #2a2a2a;border-radius:6px;background:#1a1a1a;color:#e0e0e0;text-align:center}
+.in:focus{outline:none;border-color:#4ade80}
+.iu{padding:4px 4px;font-size:12px;border:1px solid #2a2a2a;border-radius:6px;background:#1a1a1a;color:#888}
+/* WEEKLY PLAN (v7 style) */
+.week-food-row{display:flex;align-items:center;gap:6px;padding:7px 0;border-bottom:1px solid #1a1a1a}
+.week-food-row:last-child{border-bottom:none}
+.week-food-name{font-size:13px;color:#ccc;flex:1;min-width:80px}
+.week-food-badge{font-size:10px;padding:2px 6px;border-radius:99px;flex-shrink:0}
+.week-sec-hd{font-size:11px;font-weight:600;color:#555;padding:6px 0 4px;letter-spacing:.04em;text-transform:uppercase;border-bottom:1px solid #1e1e1e;margin-bottom:4px}
+.week-add-area{margin-top:10px;padding-top:8px;border-top:1px solid #1e1e1e}
+/* HISTORY */
+.hist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:7px;margin-bottom:11px}
+.hist-day{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:9px 10px;cursor:pointer;transition:all .15s}
+.hist-day:hover,.hist-day.sel{border-color:#4ade80;background:#1a2a1a}
+.hist-date{font-size:11px;color:#666;margin-bottom:3px}
+.hist-p{font-size:17px;font-weight:700}
+.hist-sub{font-size:10px;color:#555;margin-top:1px}
+.hist-detail{background:#111;border:1px solid #222;border-radius:12px;padding:13px 15px;margin-top:9px}
+.hist-none{color:#555;font-size:13px;padding:16px 0;text-align:center}
+/* COST TABLE */
+.cost-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.cost-tbl td,.cost-tbl th{padding:5px 7px;border-bottom:1px solid #1a1a1a;color:#777;text-align:left}
+.cost-tbl th{font-size:11px;color:#555;font-weight:600}
+.cost-tbl tr:last-child td{border-bottom:none}
+/* EXPORT/IMPORT */
+.export-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.ebtn{padding:6px 14px;font-size:12px;border:1px solid #2a2a2a;border-radius:7px;background:#1a1a1a;color:#888;cursor:pointer;transition:all .15s}
+.ebtn:hover{background:#2a2a2a;color:#e0e0e0}
+.ebtn.green{border-color:#2d5a2d;background:#1a3a1a;color:#4ade80}
+@media(max-width:600px){.g4{grid-template-columns:repeat(2,1fr)}.ig4{grid-template-columns:1fr 1fr}.ig3{grid-template-columns:1fr 1fr}.ig2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<h1>🥗 Protein Diet Planner</h1>
+<div class="subtitle" id="todayLabel"></div>
+<div class="g4" id="metrics"></div>
+
+<!-- STAPLES -->
+<div class="card">
+  <div class="stitle">Daily staples — check what you had today</div>
+  <div id="staples-list"></div>
+</div>
+
+<!-- VIEW TABS -->
+<div class="view-tabs">
+  <button class="view-tab on"  onclick="showView('today')">📋 Today</button>
+  <button class="view-tab"     onclick="showView('week')">📅 Weekly Plan</button>
+  <button class="view-tab"     onclick="showView('history')">📊 History</button>
+</div>
+
+<!-- ══ TODAY ══ -->
+<div id="view-today">
+  <div class="meal-tabs" id="meal-tabs"></div>
+  <div class="card">
+    <div class="bar-row"><span>Protein today</span><span id="pnum" style="font-weight:600"></span></div>
+    <div class="bar-bg"><div class="bar" id="pbar"></div></div>
+    <div class="bar-row"><span>7-day spend</span><span id="cnum" style="font-weight:600"></span></div>
+    <div class="bar-bg"><div class="bar" id="cbar"></div></div>
+  </div>
+  <div id="meal-panels"></div>
+
+  <!-- ALL INGREDIENTS TABLE -->
+  <div class="card">
+    <div class="stitle">All ingredients today <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#444;font-size:10px">— every field editable</span></div>
+    <div class="tbl-wrap">
+    <table>
+      <thead><tr>
+        <th>Name</th><th>Meal·Dish</th><th>Qty</th><th>Unit</th>
+        <th>Pro/100</th><th>Kcal/100</th><th>Carb/100</th><th>Fat/100</th><th>Fib/100</th><th>₹/100</th>
+        <th>Protein</th><th>Kcal</th><th>Carbs</th><th>Fat</th><th>Fibre</th><th>Cost</th><th></th>
+      </tr></thead>
+      <tbody id="all-ingr-body"></tbody>
+      <tfoot><tr class="tfoot">
+        <td colspan="10">Total (incl. staples)</td>
+        <td id="tp"></td><td id="tk"></td><td id="tcarb"></td><td id="tfat"></td><td id="tfibre"></td><td id="tc"></td><td></td>
+      </tr></tfoot>
+    </table>
+    </div>
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid #1e1e1e;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span id="auto-save-note" style="font-size:12px;color:#555">Changes auto-saved.</span>
+      <span id="saved-ts" style="font-size:11px;color:#444"></span>
+    </div>
+  </div>
+
+  <!-- QUICK ADD -->
+  <div class="card">
+    <div class="stitle">Quick-add ingredient</div>
+    <div style="font-size:11px;color:#555;margin-bottom:6px;font-weight:500">From library</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" id="lib-pills"></div>
+    <hr class="divider">
+    <div style="font-size:12px;font-weight:600;color:#666;margin-bottom:8px">Custom ingredient</div>
+    <div class="ig ig2">
+      <div><div class="fl">Name</div><input class="inp" id="in-name" placeholder="e.g. Tofu"></div>
+      <div><div class="fl">Add to meal</div>
+        <select class="inp" id="in-meal">
+          <option value="breakfast">Breakfast</option><option value="lunch">Lunch</option>
+          <option value="dinner">Dinner</option><option value="snacks">Snacks</option>
+        </select>
+      </div>
+    </div>
+    <div class="ig ig4">
+      <div><div class="fl">Protein/100</div><input class="inp" id="in-pr" type="number" min="0" placeholder="g"></div>
+      <div><div class="fl">Kcal/100</div><input class="inp" id="in-kc" type="number" min="0" placeholder="kcal"></div>
+      <div><div class="fl">Carbs/100</div><input class="inp" id="in-cb" type="number" min="0" placeholder="g"></div>
+      <div><div class="fl">Fat/100</div><input class="inp" id="in-ft" type="number" min="0" placeholder="g"></div>
+    </div>
+    <div class="ig ig3">
+      <div><div class="fl">Fibre/100</div><input class="inp" id="in-fb" type="number" min="0" placeholder="g"></div>
+      <div><div class="fl">₹/100</div><input class="inp" id="in-pp" type="number" min="0" placeholder="₹"></div>
+      <div><div class="fl">Qty</div><input class="inp" id="in-qty" type="number" min="1" placeholder="100"></div>
+    </div>
+    <div class="ig ig2">
+      <div><div class="fl">Unit</div>
+        <select class="inp" id="in-unit"><option value="g">g</option><option value="ml">ml</option><option value="piece">piece</option></select>
+      </div>
+      <div><div class="fl">Type</div>
+        <select class="inp" id="in-type"><option value="p">Animal</option><option value="v">Plant</option></select>
+      </div>
+    </div>
+    <div class="add-bottom">
+      <button class="abtn" onclick="addCustomIngr()">+ Add</button>
+      <span class="err" id="add-err"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ WEEKLY PLAN (v7 style: day tabs + ingredient list with +/- and text input) ══ -->
+<div id="view-week" style="display:none">
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+      <div class="stitle" style="margin:0">Weekly Ingredient Plan</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="small-btn" onclick="clearWeekDay()">Clear this day</button>
+        <button class="small-btn amber" onclick="copyPlanToToday()">📋 Use today's plan</button>
+      </div>
+    </div>
+    <!-- Day tabs -->
+    <div class="day-tabs" id="week-day-tabs"></div>
+    <!-- Progress bars for selected day -->
+    <div style="margin-bottom:10px">
+      <div class="bar-row"><span id="wk-day-label" style="font-size:12px;color:#666"></span><span id="wk-pnum" style="font-size:12px;font-weight:600"></span></div>
+      <div class="bar-bg"><div class="bar" id="wk-pbar"></div></div>
+    </div>
+    <!-- Ingredient list for selected day (v7 style) -->
+    <div id="week-ingr-list"></div>
+    <!-- Add ingredient to plan -->
+    <div class="week-add-area">
+      <div style="font-size:11px;color:#555;margin-bottom:6px;font-weight:500">From library</div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px" id="wk-lib-pills"></div>
+      <hr class="divider">
+      <div style="font-size:12px;font-weight:600;color:#666;margin-bottom:7px">Add custom</div>
+      <div class="ig ig3" style="margin-bottom:6px">
+        <div><div class="fl">Name</div><input class="inp" id="wk-name" placeholder="e.g. Chicken"></div>
+        <div><div class="fl">Qty</div><input class="inp" id="wk-qty" type="number" min="0" placeholder="100"></div>
+        <div><div class="fl">Unit</div><select class="inp" id="wk-unit"><option value="g">g</option><option value="ml">ml</option><option value="piece">piece</option></select></div>
+      </div>
+      <div class="ig ig3" style="margin-bottom:6px">
+        <div><div class="fl">Pro/100</div><input class="inp" id="wk-pr" type="number" min="0" placeholder="g"></div>
+        <div><div class="fl">Kcal/100</div><input class="inp" id="wk-kc" type="number" min="0" placeholder="kcal"></div>
+        <div><div class="fl">₹/100</div><input class="inp" id="wk-pp" type="number" min="0" placeholder="₹"></div>
+      </div>
+      <div class="add-bottom">
+        <button class="small-btn green" onclick="addWkCustom()">+ Add to plan</button>
+        <span class="err" id="wk-err"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HISTORY ══ -->
+<div id="view-history" style="display:none">
+  <div class="card">
+    <div class="stitle">Last 30 days</div>
+    <div class="hist-grid" id="hist-grid"></div>
+    <div id="hist-detail"></div>
+  </div>
+</div>
+
+<!-- COST TABLE -->
+<div class="card">
+  <div class="stitle">₹ per gram of protein</div>
+  <table class="cost-tbl"><thead><tr><th>Food</th><th>Pro/100</th><th>₹/100</th><th>₹/g protein</th></tr></thead>
+  <tbody id="cost-body"></tbody></table>
+</div>
+
+<!-- EXPORT / IMPORT -->
+<div class="card">
+  <div class="stitle">Backup & Restore</div>
+  <div style="font-size:12px;color:#555;margin-bottom:8px">Export all your data as a JSON file. Import it back anytime — safe across browser resets.</div>
+  <div class="export-row">
+    <button class="ebtn green" onclick="exportData()">⬇ Export backup</button>
+    <button class="ebtn" onclick="document.getElementById('imp-file').click()">⬆ Import backup</button>
+    <input type="file" id="imp-file" accept=".json" style="display:none" onchange="importData(this)">
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════════════════
+const WB = 1500;
+const MEAL_DEFS = [
+  {id:'breakfast', label:'Breakfast', icon:'🌅', col:'#93c5fd'},
+  {id:'lunch',     label:'Lunch',     icon:'☀️',  col:'#86efac'},
+  {id:'dinner',    label:'Dinner',    icon:'🌙', col:'#fdba74'},
+  {id:'snacks',    label:'Snacks',    icon:'🍎', col:'#d8b4fe'},
+];
+const DAYS_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+// ═══════════════════════════════════════════════════════════
+// FOOD LIBRARY  (all per-unit: per 1g / per 1ml / per 1piece)
+// ═══════════════════════════════════════════════════════════
+const LIB = {
+  oats:    {n:'Oats',                 u:'g',  s:40, max:40,  pp:270/1000, pr:5/40,   kc:156/40,  carb:27.4/40, fat:2.8/40,  fibre:4/40,  t:'v'},
+  chicken: {n:'Chicken breast (raw)', u:'g',  s:25, max:250, pp:122/235,  pr:0.225,  kc:1.20,    carb:0,       fat:0.031,   fibre:0,     t:'p'},
+  soya:    {n:'Soya chunks (dry)',    u:'g',  s:10, max:30,  pp:50/200,   pr:0.52,   kc:3.36,    carb:0.33,    fat:0.01,    fibre:0.03,  t:'v'},
+  peanuts: {n:'Roasted peanuts',      u:'g',  s:10, max:60,  pp:105/500,  pr:0.25,   kc:5.67,    carb:0.16,    fat:0.49,    fibre:0.08,  t:'v'},
+  paneer:  {n:'Paneer',               u:'g',  s:25, max:100, pp:130/200,  pr:56/200, kc:2.65,    carb:0.016,   fat:0.20,    fibre:0,     t:'v'},
+  gyogurt: {n:'Greek yogurt',         u:'g',  s:50, max:200, pp:50/100,   pr:0.10,   kc:0.59,    carb:0.038,   fat:0.019,   fibre:0,     t:'p'},
+  tuna:    {n:'Canned tuna',          u:'g',  s:25, max:150, pp:85/100,   pr:0.26,   kc:1.03,    carb:0,       fat:0.008,   fibre:0,     t:'p'},
+};
+
+// ═══════════════════════════════════════════════════════════
+// STAPLES  (per-unit values)
+// ═══════════════════════════════════════════════════════════
+const DEFAULT_STAPLES = [
+  {id:'st_egg',  name:'Whole egg',  qty:5,   unit:'piece', pr:6,       kc:78,      carb:0.6,     fat:5,      fibre:0,    pp:250/30,   checked:true,  mealId:'breakfast'},
+  {id:'st_milk', name:'Milk',       qty:250, unit:'ml',    pr:11/250,  kc:145/250, carb:12/250,  fat:8/250,  fibre:0,    pp:26/250,   checked:true,  mealId:'breakfast'},
+  {id:'st_alm',  name:'Almonds',    qty:10,  unit:'g',     pr:0.21,    kc:5.76,    carb:0.22,    fat:0.49,   fibre:0.13, pp:80/100,   checked:false, mealId:'snacks'},
+];
+
+// ═══════════════════════════════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════════════════════════════
+const LS = {
+  get(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+};
+const KEYS = {td:'pptd_v5', cu:'ppc_v5', wk:'ppwk_v5', st:'ppst_v5', lg:'ppl_v5'};
+
+let custom   = LS.get(KEYS.cu) || {};
+let log      = LS.get(KEYS.lg) || {};
+let weekPlan = LS.get(KEYS.wk) || {};      // {dateKey: {mealId: [{name,qty,unit,pr100,kc100,carb100,fat100,fibre100,pp100,libId?}]}}
+let staples  = LS.get(KEYS.st) || JSON.parse(JSON.stringify(DEFAULT_STAPLES));
+let uid      = Object.keys(custom).length;
+
+function fd(id){return LIB[id]||custom[id];}
+function clamp(id,v){const f=fd(id);return f&&f.max?Math.min(f.max,Math.max(0,v)):Math.max(0,v);}
+
+// ═══════════════════════════════════════════════════════════
+// TODAY STATE
+// ═══════════════════════════════════════════════════════════
+function blankDay(){const m={};MEAL_DEFS.forEach(md=>{m[md.id]={dishes:[],collapsed:false};});return{meals:m};}
+let todayData = LS.get(KEYS.td) || blankDay();
+MEAL_DEFS.forEach(md=>{if(!todayData.meals[md.id])todayData.meals[md.id]={dishes:[],collapsed:false};});
+
+let curView='today', curMeal='breakfast', selHistDate=null, curWkDay=null;
+let dishForms={};MEAL_DEFS.forEach(md=>{dishForms[md.id]={open:false,name:'',ingrOpen:-1};});
+
+// ═══════════════════════════════════════════════════════════
+// AUTO-SAVE  (debounced 800ms)
+// ═══════════════════════════════════════════════════════════
+let saveTimer=null;
+function autosave(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    LS.set(KEYS.td,todayData);LS.set(KEYS.cu,custom);LS.set(KEYS.wk,weekPlan);LS.set(KEYS.st,staples);
+    // also log today automatically
+    const key=todayKey();
+    const snap=JSON.parse(JSON.stringify({meals:todayData.meals,staples}));
+    log[key]={...snap,savedAt:Date.now()};
+    const ak=Object.keys(log).sort();if(ak.length>30)ak.slice(0,ak.length-30).forEach(k=>delete log[k]);
+    LS.set(KEYS.lg,log);
+    const el=document.getElementById('saved-ts');
+    if(el){const t=new Date();el.textContent='Last saved '+pad(t.getHours())+':'+pad(t.getMinutes());}
+  },800);
+}
+
+// ═══════════════════════════════════════════════════════════
+// DATE HELPERS
+// ═══════════════════════════════════════════════════════════
+function todayKey(){const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function pad(n){return n<10?'0'+n:''+n;}
+function getWeekDays(){const t=new Date();const dow=t.getDay();const mon=new Date(t);mon.setDate(t.getDate()-(dow===0?6:dow-1));return Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());});}
+function fmtDate(k){const[y,m,d]=k.split('-');const mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return mn[+m-1]+' '+parseInt(d);}
+function fmtDateFull(k){const[y,m,d]=k.split('-');const mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];const dt=new Date(+y,+m-1,+d);return DAYS_SHORT[dt.getDay()]+', '+mn[+m-1]+' '+parseInt(d)+' '+y;}
+function last30Keys(){const ks=[];for(let i=29;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);ks.push(d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()));}return ks;}
+
+// ═══════════════════════════════════════════════════════════
+// CALC  — all stored macros are PER-UNIT (per 1g/ml/piece)
+//         custom ingredients store values as per-100 (pr100 etc.)
+// ═══════════════════════════════════════════════════════════
+function zero(){return{p:0,k:0,carb:0,fat:0,fibre:0,c:0};}
+function addV(a,b){return{p:a.p+b.p,k:a.k+b.k,carb:a.carb+b.carb,fat:a.fat+b.fat,fibre:a.fibre+b.fibre,c:a.c+b.c};}
+
+function calcRow(r){
+  // r has per-unit fields: pr,kc,carb,fat,fibre,pp
+  const q=+r.qty||0;
+  return{p:(r.pr||0)*q,k:(r.kc||0)*q,carb:(r.carb||0)*q,fat:(r.fat||0)*q,fibre:(r.fibre||0)*q,c:(r.pp||0)*q};
+}
+
+function calcIngr(ing){
+  if(ing.libId){
+    const f=fd(ing.libId);if(!f)return zero();
+    const q=+ing.qty||0;
+    return{p:f.pr*q,k:f.kc*q,carb:(f.carb||0)*q,fat:(f.fat||0)*q,fibre:(f.fibre||0)*q,c:f.pp*q};
+  }
+  // custom: values stored as per100 → divide by 100
+  const q=+ing.qty||0;
+  return{
+    p: (ing.pr100||0)/100*q,
+    k: (ing.kc100||0)/100*q,
+    carb:(ing.carb100||0)/100*q,
+    fat: (ing.fat100||0)/100*q,
+    fibre:(ing.fibre100||0)/100*q,
+    c:  (ing.pp100||0)/100*q,
+  };
+}
+
+function calcDish(dish){let t=zero();(dish.ingredients||[]).forEach(i=>t=addV(t,calcIngr(i)));return t;}
+function calcMealToday(mId){
+  let t=zero();
+  staples.forEach(s=>{if(s.checked&&s.mealId===mId)t=addV(t,calcRow(s));});
+  (todayData.meals[mId].dishes||[]).forEach(d=>(d.ingredients||[]).forEach(i=>t=addV(t,calcIngr(i))));
+  return t;
+}
+function calcAll(){
+  let t=zero();
+  staples.forEach(s=>{if(s.checked)t=addV(t,calcRow(s));});
+  MEAL_DEFS.forEach(m=>(todayData.meals[m.id].dishes||[]).forEach(d=>(d.ingredients||[]).forEach(i=>t=addV(t,calcIngr(i)))));
+  return t;
+}
+function calcDayLog(entry){
+  let t=zero();
+  if(entry.staples)entry.staples.forEach(s=>{if(s.checked)t=addV(t,calcRow(s));});
+  MEAL_DEFS.forEach(m=>((entry.meals&&entry.meals[m.id]&&entry.meals[m.id].dishes)||[]).forEach(d=>(d.ingredients||[]).forEach(i=>t=addV(t,calcIngr(i)))));
+  return t;
+}
+function last7Cost(){return last30Keys().slice(-7).reduce((t,k)=>t+(log[k]?calcDayLog(log[k]).c:0),0);}
+function last30Avg(){const ks=last30Keys().filter(k=>log[k]);return ks.length?Math.round(ks.reduce((t,k)=>t+calcDayLog(log[k]).p,0)/ks.length):0;}
+
+// plan calc for a date
+function calcPlanDay(dateKey){
+  let t=zero();
+  const dp=weekPlan[dateKey]||{};
+  MEAL_DEFS.forEach(m=>(dp[m.id]||[]).forEach(it=>{
+    if(it.libId){const f=fd(it.libId);if(f){const q=+it.qty||0;t=addV(t,{p:f.pr*q,k:f.kc*q,carb:(f.carb||0)*q,fat:(f.fat||0)*q,fibre:(f.fibre||0)*q,c:f.pp*q});}}
+    else{const q=+it.qty||0;t=addV(t,{p:(it.pr100||0)/100*q,k:(it.kc100||0)/100*q,carb:(it.carb100||0)/100*q,fat:(it.fat100||0)/100*q,fibre:(it.fibre100||0)/100*q,c:(it.pp100||0)/100*q});}
+  }));
+  return t;
+}
+
+// ═══════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════
+function r1(n){return Math.round((+n||0)*10)/10;}
+function r0(n){return Math.round(+n||0);}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function met(l,v,s,col){return`<div class="mc"><div class="ml">${l}</div><div class="mv"${col?` style="color:${col}"`:''}}>${v}</div><div class="ms">${s}</div></div>`;}
+// convert per-unit → per-100 for display (except pieces which stay per-piece)
+function pu2p100(pu,unit){return unit==='piece'?r1(pu):r1(pu*100);}
+function p100pu(v,unit){const n=parseFloat(v)||0;return unit==='piece'?n:n/100;}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER BARS + METRICS
+// ═══════════════════════════════════════════════════════════
+function renderBars(){
+  const tot=calcAll();const wk=last7Cost();const over=wk>WB+30;
+  const avg=last30Avg();const lc=Object.keys(log).length;
+  document.getElementById('metrics').innerHTML=
+    met('Today\'s protein',r0(tot.p)+'g','target 120g',tot.p>=115?'#4ade80':tot.p>=100?'#fbbf24':'#f87171')+
+    met('Today\'s cost','₹'+r0(tot.c),'incl. staples','')+
+    met('7-day spend','₹'+r0(wk),over?'over ₹1500':'within ₹1500',over?'#f87171':'#4ade80')+
+    met('30-day avg',avg>0?avg+'g':'—',lc+' days logged','');
+  const pp=Math.min(100,(tot.p/120)*100),pc=tot.p>=115?'#4ade80':tot.p>=100?'#fbbf24':'#f87171';
+  document.getElementById('pnum').textContent=r0(tot.p)+'g / 120g';
+  document.getElementById('pbar').style.cssText=`width:${pp}%;background:${pc}`;
+  const cp=Math.min(107,(wk/WB)*100),cc=over?'#f87171':wk>WB-80?'#fbbf24':'#4ade80';
+  document.getElementById('cnum').textContent='₹'+r0(wk)+' / ₹1500';
+  document.getElementById('cbar').style.cssText=`width:${cp}%;background:${cc}`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// STAPLES
+// ═══════════════════════════════════════════════════════════
+function renderStaples(){
+  document.getElementById('staples-list').innerHTML=staples.map((s,i)=>{
+    const v=calcRow(s);
+    return`<div class="cb-row">
+      <input type="checkbox" id="cb${i}" ${s.checked?'checked':''} onchange="stToggle(${i},this.checked)">
+      <label class="cb-label" for="cb${i}">${esc(s.name)}</label>
+      <div class="qrow">
+        <button class="qbtn" onclick="stStep(${i},-1)" ${s.qty<=0?'disabled':''}>−</button>
+        <input class="qty-inp" type="number" min="0" value="${s.qty}" style="width:52px" onchange="stQty(${i},this.value)" oninput="stQty(${i},this.value)">
+        <button class="qbtn" onclick="stStep(${i},1)">+</button>
+      </div>
+      <span class="cb-unit">${s.unit==='piece'?'pc':s.unit}</span>
+      <select class="cb-meal-sel" onchange="stMeal(${i},this.value)">${MEAL_DEFS.map(m=>`<option value="${m.id}"${s.mealId===m.id?' selected':''}>${m.icon}</option>`).join('')}</select>
+      <span class="cb-macro" style="color:${s.checked?'#aaa':'#3a3a3a'}">${s.checked?r1(v.p)+'g pro · '+r0(v.k)+' kcal':''}</span>
+    </div>`;
+  }).join('');
+}
+function stToggle(i,v){staples[i].checked=v;autosave();render();}
+function stStep(i,d){staples[i].qty=Math.max(0,(+staples[i].qty||0)+d);autosave();renderStaples();renderAllIngr();renderBars();}
+function stQty(i,v){staples[i].qty=Math.max(0,parseFloat(v)||0);autosave();renderAllIngr();renderBars();}
+function stMeal(i,v){staples[i].mealId=v;autosave();renderAllIngr();}
+
+// ═══════════════════════════════════════════════════════════
+// MEAL TABS
+// ═══════════════════════════════════════════════════════════
+function renderMealTabs(){
+  document.getElementById('meal-tabs').innerHTML=MEAL_DEFS.map(m=>{
+    const v=calcMealToday(m.id);
+    return`<button class="meal-tab${curMeal===m.id?' on':''}" onclick="switchMeal('${m.id}')">${m.icon} ${m.label} <span style="font-size:11px;color:#555">${r0(v.p)}g</span></button>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// MEAL PANELS
+// ═══════════════════════════════════════════════════════════
+function renderMealPanels(){
+  let html='';
+  MEAL_DEFS.forEach(m=>{
+    if(curMeal!==m.id)return;
+    const meal=todayData.meals[m.id];
+    const v=calcMealToday(m.id);
+    let dishesHtml='';
+    (meal.dishes||[]).forEach((dish,di)=>{
+      const dv=calcDish(dish);
+      let ingrHtml=(dish.ingredients||[]).map((ing,ii)=>{
+        const iv=calcIngr(ing);
+        return`<div class="ingr-row-d">
+          <span style="flex:1">${esc(ing.name)} · ${ing.qty}${ing.unit==='piece'?'pc':ing.unit||'g'}</span>
+          <span style="color:#555;font-size:11px">${r1(iv.p)}g pro · ${r0(iv.k)} kcal</span>
+          <button class="delbtn" onclick="removeIngr('${m.id}',${di},${ii})">✕</button>
+        </div>`;
+      }).join('');
+      dishesHtml+=`<div style="padding:7px 0;border-bottom:1px solid #1a1a1a">
+        <div class="dish-hdr">
+          <div><span class="dish-name">${esc(dish.name)}</span><span style="font-size:11px;color:#555;margin-left:8px">${r0(dv.p)}g · ₹${r0(dv.c)}</span></div>
+          <div style="display:flex;gap:4px">
+            <button class="small-btn" style="font-size:11px" onclick="toggleIngrForm('${m.id}',${di})">+ Ingredient</button>
+            <button class="delbtn" onclick="removeDish('${m.id}',${di})">✕</button>
+          </div>
+        </div>
+        ${ingrHtml||'<div style="font-size:11px;color:#444;padding-left:4px;margin-top:3px">No ingredients — add below</div>'}
+        ${dishForms[m.id].ingrOpen===di?renderIngrForm(m.id,di):''}
+      </div>`;
+    });
+    const f=dishForms[m.id];
+    let addDish=`<div style="margin-top:9px">`;
+    if(!f.open){addDish+=`<button class="small-btn" onclick="openDishForm('${m.id}')">+ Add dish</button>`;}
+    else{addDish+=`<div style="display:flex;gap:6px;align-items:flex-end;flex-wrap:wrap">
+      <div><div class="fl">Dish name</div><input class="inp" id="df-${m.id}" placeholder="e.g. Chicken curry" value="${esc(f.name)}" oninput="dishForms['${m.id}'].name=this.value" onkeydown="if(event.key==='Enter')commitDish('${m.id}')"></div>
+      <button class="small-btn green" onclick="commitDish('${m.id}')">Add</button>
+      <button class="small-btn" onclick="closeDishForm('${m.id}')">Cancel</button>
+    </div>`;}
+    addDish+='</div>';
+    html+=`<div class="meal-section">
+      <div class="meal-hdr${meal.collapsed?' coll':''}" onclick="toggleMeal('${m.id}')">
+        <div style="display:flex;align-items:center"><span style="font-size:16px;margin-right:8px">${m.icon}</span><span style="font-size:14px;font-weight:600;color:#e0e0e0">${m.label}</span><span style="font-size:12px;color:#555;margin-left:8px">${(meal.dishes||[]).length} dishes · ${r0(v.p)}g · ₹${r0(v.c)}</span></div>
+        <span style="color:#555;font-size:12px">${meal.collapsed?'▼':'▲'}</span>
+      </div>
+      ${!meal.collapsed?`<div class="meal-body">${dishesHtml||'<div class="hist-none" style="padding:6px 0 2px">No dishes yet</div>'}${addDish}</div>`:''}
+    </div>`;
+  });
+  document.getElementById('meal-panels').innerHTML=html;
+}
+
+function renderIngrForm(mId,di){
+  return`<div class="ingr-form">
+    <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em">Add ingredient</div>
+    <div class="ingr-r">
+      <input class="ii" id="ni-n-${di}" placeholder="Name">
+      <input class="in" id="ni-q-${di}" type="number" min="0" placeholder="qty">
+      <select class="iu" id="ni-u-${di}"><option value="g">g</option><option value="ml">ml</option><option value="piece">pc</option></select>
+      <input class="in" id="ni-pr-${di}" type="number" min="0" placeholder="pro/100">
+      <input class="in" id="ni-kc-${di}" type="number" min="0" placeholder="kcal/100">
+      <input class="in" id="ni-cb-${di}" type="number" min="0" placeholder="carb/100">
+      <input class="in" id="ni-ft-${di}" type="number" min="0" placeholder="fat/100">
+      <input class="in" id="ni-fb-${di}" type="number" min="0" placeholder="fib/100">
+      <input class="in" id="ni-pp-${di}" type="number" min="0" placeholder="₹/100">
+    </div>
+    <div style="font-size:11px;color:#555;margin:5px 0 4px">Or from library:</div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px">
+      ${[...Object.entries(LIB),...Object.entries(custom)].map(([id,f])=>`<button class="lib-pill" style="font-size:11px" onclick="addLibIngrToDish('${mId}',${di},'${id}')">${f.n}</button>`).join('')}
+    </div>
+    <div style="display:flex;gap:5px">
+      <button class="small-btn green" onclick="commitIngr('${mId}',${di})">Add</button>
+      <button class="small-btn" onclick="closeIngrForm('${mId}')">Cancel</button>
+    </div>
+    <div class="err" id="ie-${di}"></div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// ALL INGREDIENTS TABLE  (fully editable)
+// ═══════════════════════════════════════════════════════════
+function renderAllIngr(){
+  let rows='';
+  // checked staples
+  staples.forEach((s,si)=>{
+    if(!s.checked)return;
+    const v=calcRow(s);
+    const meal=MEAL_DEFS.find(m=>m.id===s.mealId);
+    // display per-100 values
+    const pr100=pu2p100(s.pr,s.unit), kc100=pu2p100(s.kc,s.unit);
+    const cb100=pu2p100(s.carb||0,s.unit), ft100=pu2p100(s.fat||0,s.unit), fb100=pu2p100(s.fibre||0,s.unit);
+    const pp100=pu2p100(s.pp,s.unit);
+    rows+=`<tr>
+      <td><input class="ed wide" value="${esc(s.name)}" onchange="updateSt(${si},'name',this.value)"></td>
+      <td style="color:${meal?meal.col:'#666'};font-size:11px">${meal?meal.icon+' '+meal.label:'—'}</td>
+      <td><div class="qrow">
+        <button class="qbtn" style="width:22px;height:22px;font-size:14px" onclick="stStep(${si},-1)" ${s.qty<=0?'disabled':''}>−</button>
+        <input class="qty-inp" style="width:50px" type="number" min="0" value="${s.qty}" onchange="stQtyRow(${si},this.value)" oninput="stQtyRow(${si},this.value)">
+        <button class="qbtn" style="width:22px;height:22px;font-size:14px" onclick="stStep(${si},1)">+</button>
+      </div></td>
+      <td><select class="ed-sel" onchange="updateSt(${si},'unit',this.value)"><option value="g"${s.unit==='g'?' selected':''}>g</option><option value="ml"${s.unit==='ml'?' selected':''}>ml</option><option value="piece"${s.unit==='piece'?' selected':''}>pc</option></select></td>
+      <td><input class="ed" type="number" min="0" value="${pr100}" onchange="updateStPer(${si},'pr',this.value)"></td>
+      <td><input class="ed" type="number" min="0" value="${kc100}" onchange="updateStPer(${si},'kc',this.value)"></td>
+      <td><input class="ed" type="number" min="0" value="${cb100}" onchange="updateStPer(${si},'carb',this.value)"></td>
+      <td><input class="ed" type="number" min="0" value="${ft100}" onchange="updateStPer(${si},'fat',this.value)"></td>
+      <td><input class="ed" type="number" min="0" value="${fb100}" onchange="updateStPer(${si},'fibre',this.value)"></td>
+      <td><input class="ed" type="number" min="0" value="${pp100}" onchange="updateStPer(${si},'pp',this.value)"></td>
+      <td>${r1(v.p)}g</td><td>${r0(v.k)}</td><td>${r1(v.carb)}g</td><td>${r1(v.fat)}g</td><td>${r1(v.fibre)}g</td>
+      <td>₹${v.c.toFixed(0)}</td><td><span class="ftag">staple</span></td>
+    </tr>`;
+  });
+
+  // dish ingredients
+  let anyDish=false;
+  MEAL_DEFS.forEach(m=>{
+    (todayData.meals[m.id].dishes||[]).forEach((dish,di)=>{
+      (dish.ingredients||[]).forEach((ing,ii)=>{
+        anyDish=true;
+        const iv=calcIngr(ing);
+        const unit=ing.unit||'g';
+        const isLib=!!ing.libId;
+        // get per-100 display values
+        let pr100,kc100,cb100,ft100,fb100,pp100;
+        if(isLib){
+          const f=fd(ing.libId)||{};
+          pr100=pu2p100(f.pr||0,unit);kc100=pu2p100(f.kc||0,unit);
+          cb100=pu2p100(f.carb||0,unit);ft100=pu2p100(f.fat||0,unit);
+          fb100=pu2p100(f.fibre||0,unit);pp100=pu2p100(f.pp||0,unit);
+        } else {
+          pr100=r1(ing.pr100||0);kc100=r1(ing.kc100||0);
+          cb100=r1(ing.carb100||0);ft100=r1(ing.fat100||0);
+          fb100=r1(ing.fibre100||0);pp100=r1(ing.pp100||0);
+        }
+        rows+=`<tr>
+          <td><input class="ed wide" value="${esc(ing.name)}" onchange="updateIngr('${m.id}',${di},${ii},'name',this.value)"></td>
+          <td style="color:${m.col};font-size:11px">${m.icon} ${m.label}·${esc(dish.name)}</td>
+          <td><div class="qrow">
+            <button class="qbtn" style="width:22px;height:22px;font-size:14px" onclick="ingrStep('${m.id}',${di},${ii},-1)" ${+ing.qty<=0?'disabled':''}>−</button>
+            <input class="qty-inp" style="width:50px" type="number" min="0" value="${ing.qty}" onchange="updateIngrQty('${m.id}',${di},${ii},this.value)" oninput="updateIngrQty('${m.id}',${di},${ii},this.value)">
+            <button class="qbtn" style="width:22px;height:22px;font-size:14px" onclick="ingrStep('${m.id}',${di},${ii},1)">+</button>
+          </div></td>
+          <td><select class="ed-sel" onchange="updateIngr('${m.id}',${di},${ii},'unit',this.value)"><option value="g"${unit==='g'?' selected':''}>g</option><option value="ml"${unit==='ml'?' selected':''}>ml</option><option value="piece"${unit==='piece'?' selected':''}>pc</option></select></td>
+          <td><input class="ed" type="number" min="0" value="${pr100}" onchange="updateIngr100('${m.id}',${di},${ii},'pr100',this.value)"></td>
+          <td><input class="ed" type="number" min="0" value="${kc100}" onchange="updateIngr100('${m.id}',${di},${ii},'kc100',this.value)"></td>
+          <td><input class="ed" type="number" min="0" value="${cb100}" onchange="updateIngr100('${m.id}',${di},${ii},'carb100',this.value)"></td>
+          <td><input class="ed" type="number" min="0" value="${ft100}" onchange="updateIngr100('${m.id}',${di},${ii},'fat100',this.value)"></td>
+          <td><input class="ed" type="number" min="0" value="${fb100}" onchange="updateIngr100('${m.id}',${di},${ii},'fibre100',this.value)"></td>
+          <td><input class="ed" type="number" min="0" value="${pp100}" onchange="updateIngr100('${m.id}',${di},${ii},'pp100',this.value)"></td>
+          <td>${r1(iv.p)}g</td><td>${r0(iv.k)}</td><td>${r1(iv.carb)}g</td><td>${r1(iv.fat)}g</td><td>${r1(iv.fibre)}g</td>
+          <td>₹${iv.c.toFixed(0)}</td>
+          <td><button class="delbtn" onclick="removeIngr('${m.id}',${di},${ii})">✕</button></td>
+        </tr>`;
+      });
+    });
+  });
+  if(!rows) rows=`<tr><td colspan="17" style="color:#444;font-size:12px;padding:12px 5px">No items yet. Check staples above or add dishes in Today tab.</td></tr>`;
+  document.getElementById('all-ingr-body').innerHTML=rows;
+  const tot=calcAll();
+  document.getElementById('tp').textContent=r1(tot.p)+'g'+(tot.p>=115?' ✓':'');
+  document.getElementById('tk').textContent=r0(tot.k)+' kcal';
+  document.getElementById('tcarb').textContent=r1(tot.carb)+'g';
+  document.getElementById('tfat').textContent=r1(tot.fat)+'g';
+  document.getElementById('tfibre').textContent=r1(tot.fibre)+'g';
+  document.getElementById('tc').textContent='₹'+r0(tot.c);
+}
+
+// staple update helpers
+function updateSt(si,field,val){staples[si][field]=val;autosave();}
+function stQtyRow(si,val){staples[si].qty=Math.max(0,parseFloat(val)||0);autosave();renderBars();renderAllIngr();}
+function updateStPer(si,field,val){
+  const unit=staples[si].unit;
+  staples[si][field]=p100pu(val,unit);
+  autosave();renderAllIngr();renderBars();
+}
+
+// ingredient update helpers — FIXED: only update the changed field, never touch others
+function updateIngr(mId,di,ii,field,val){
+  todayData.meals[mId].dishes[di].ingredients[ii][field]=val;
+  if(field==='unit'&&todayData.meals[mId].dishes[di].ingredients[ii].libId){
+    // detach from lib when unit changed
+    todayData.meals[mId].dishes[di].ingredients[ii].libId=undefined;
+  }
+  autosave();renderAllIngr();renderBars();
+}
+function updateIngrQty(mId,di,ii,val){
+  todayData.meals[mId].dishes[di].ingredients[ii].qty=parseFloat(val)||0;
+  autosave();renderAllIngr();renderBars();
+}
+function ingrStep(mId,di,ii,d){
+  const ing=todayData.meals[mId].dishes[di].ingredients[ii];
+  ing.qty=Math.max(0,(+ing.qty||0)+d);
+  autosave();renderAllIngr();renderBars();
+}
+function updateIngr100(mId,di,ii,field,val){
+  // detach from library, update only the specified per-100 field
+  const ing=todayData.meals[mId].dishes[di].ingredients[ii];
+  if(ing.libId){
+    // copy lib values first so we don't lose other fields
+    const f=fd(ing.libId)||{};
+    const unit=ing.unit||'g';
+    ing.pr100   = pu2p100(f.pr||0,  unit);
+    ing.kc100   = pu2p100(f.kc||0,  unit);
+    ing.carb100 = pu2p100(f.carb||0,unit);
+    ing.fat100  = pu2p100(f.fat||0, unit);
+    ing.fibre100= pu2p100(f.fibre||0,unit);
+    ing.pp100   = pu2p100(f.pp||0,  unit);
+    ing.libId   = undefined;
+  }
+  ing[field]=parseFloat(val)||0;
+  autosave();renderAllIngr();renderBars();
+}
+
+// ═══════════════════════════════════════════════════════════
+// LIB PILLS & COST TABLE
+// ═══════════════════════════════════════════════════════════
+function renderLibPills(){
+  const all=[...Object.entries(LIB),...Object.entries(custom)];
+  document.getElementById('lib-pills').innerHTML=all.map(([id,f])=>`<button class="lib-pill" onclick="quickAddLib('${id}')">${f.n}</button>`).join('');
+}
+function renderCostTable(){
+  const all=[...Object.entries(LIB),...Object.entries(custom)];
+  document.getElementById('cost-body').innerHTML=all.map(([id,f])=>{
+    const pr100=f.pr*100,pp100=f.pp*100;
+    return`<tr><td>${f.n}</td><td>${r1(pr100)}g</td><td>₹${r1(pp100)}</td><td>${pr100>0?'₹'+(pp100/pr100).toFixed(2)+'/g':'—'}</td></tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// FULL RENDER
+// ═══════════════════════════════════════════════════════════
+function render(){
+  document.getElementById('todayLabel').textContent='Today: '+fmtDateFull(todayKey());
+  renderBars();renderStaples();renderMealTabs();renderMealPanels();renderAllIngr();renderLibPills();renderCostTable();
+}
+
+// ═══════════════════════════════════════════════════════════
+// MEAL ACTIONS
+// ═══════════════════════════════════════════════════════════
+function switchMeal(id){curMeal=id;MEAL_DEFS.forEach(m=>{dishForms[m.id].ingrOpen=-1;});render();}
+function toggleMeal(id){todayData.meals[id].collapsed=!todayData.meals[id].collapsed;autosave();renderMealPanels();}
+function openDishForm(mId){dishForms[mId].open=true;dishForms[mId].name='';renderMealPanels();setTimeout(()=>{const el=document.getElementById('df-'+mId);if(el)el.focus();},50);}
+function closeDishForm(mId){dishForms[mId].open=false;renderMealPanels();}
+function commitDish(mId){const name=dishForms[mId].name.trim();if(!name)return;todayData.meals[mId].dishes.push({name,ingredients:[]});dishForms[mId].open=false;dishForms[mId].name='';autosave();render();}
+function removeDish(mId,di){todayData.meals[mId].dishes.splice(di,1);autosave();render();}
+function toggleIngrForm(mId,di){dishForms[mId].ingrOpen=dishForms[mId].ingrOpen===di?-1:di;renderMealPanels();renderAllIngr();setTimeout(()=>{const el=document.getElementById('ni-n-'+di);if(el)el.focus();},50);}
+function closeIngrForm(mId){dishForms[mId].ingrOpen=-1;renderMealPanels();}
+
+function commitIngr(mId,di){
+  const g=id=>document.getElementById(id);
+  const name=(g('ni-n-'+di)||{}).value?.trim();
+  const qty=parseFloat((g('ni-q-'+di)||{}).value)||0;
+  const unit=(g('ni-u-'+di)||{}).value||'g';
+  const pr100=parseFloat((g('ni-pr-'+di)||{}).value)||0;
+  const kc100=parseFloat((g('ni-kc-'+di)||{}).value)||0;
+  const carb100=parseFloat((g('ni-cb-'+di)||{}).value)||0;
+  const fat100=parseFloat((g('ni-ft-'+di)||{}).value)||0;
+  const fibre100=parseFloat((g('ni-fb-'+di)||{}).value)||0;
+  const pp100=parseFloat((g('ni-pp-'+di)||{}).value)||0;
+  const err=document.getElementById('ie-'+di);
+  if(!name){if(err)err.textContent='Enter name';return;}
+  if(qty<=0){if(err)err.textContent='Enter qty';return;}
+  if(err)err.textContent='';
+  todayData.meals[mId].dishes[di].ingredients.push({name,qty,unit,pr100,kc100,carb100,fat100,fibre100,pp100});
+  dishForms[mId].ingrOpen=-1;autosave();render();
+}
+
+function addLibIngrToDish(mId,di,libId){
+  const f=fd(libId);if(!f)return;
+  todayData.meals[mId].dishes[di].ingredients.push({libId,name:f.n,qty:f.s||25,unit:f.u});
+  dishForms[mId].ingrOpen=-1;autosave();render();
+}
+function removeIngr(mId,di,ii){todayData.meals[mId].dishes[di].ingredients.splice(ii,1);autosave();render();}
+
+function quickAddLib(libId){
+  const f=fd(libId);if(!f)return;
+  const mId=(document.getElementById('in-meal')||{}).value||'snacks';
+  todayData.meals[mId].dishes.push({name:f.n,ingredients:[{libId,name:f.n,qty:f.s||25,unit:f.u}]});
+  curMeal=mId;autosave();render();
+}
+function addCustomIngr(){
+  const g=id=>(document.getElementById(id)||{});
+  const name=g('in-name').value?.trim();
+  const mId=g('in-meal').value||'snacks';
+  const pr100=parseFloat(g('in-pr').value)||0;
+  const kc100=parseFloat(g('in-kc').value)||0;
+  const carb100=parseFloat(g('in-cb').value)||0;
+  const fat100=parseFloat(g('in-ft').value)||0;
+  const fibre100=parseFloat(g('in-fb').value)||0;
+  const pp100=parseFloat(g('in-pp').value)||0;
+  const qty=parseFloat(g('in-qty').value)||0;
+  const unit=g('in-unit').value||'g';
+  const type=g('in-type').value||'v';
+  const err=document.getElementById('add-err');
+  if(!name){err.textContent='Enter a name';return;}
+  if(qty<=0){err.textContent='Enter a quantity';return;}
+  err.textContent='';
+  const id='c'+(++uid);const step=unit==='piece'?1:unit==='ml'?50:25;
+  custom[id]={n:name,u:unit,s:step,max:null,pp:pp100/100,pr:pr100/100,kc:kc100/100,carb:carb100/100,fat:fat100/100,fibre:fibre100/100,t:type};
+  todayData.meals[mId].dishes.push({name,ingredients:[{libId:id,name,qty,unit}]});
+  curMeal=mId;
+  ['in-name','in-pr','in-kc','in-cb','in-ft','in-fb','in-pp','in-qty'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
+  autosave();render();
+}
+
+// ═══════════════════════════════════════════════════════════
+// WEEKLY PLAN  (v7 style: day tabs, ingredient list with +/- and text box per ingredient)
+// ═══════════════════════════════════════════════════════════
+function initWkDay(){if(!curWkDay)curWkDay=todayKey();}
+
+function renderWeekPlan(){
+  initWkDay();
+  const days=getWeekDays();const tk=todayKey();
+  // Day tabs
+  document.getElementById('week-day-tabs').innerHTML=days.map(dk=>{
+    const dt=new Date(dk+'T00:00:00');
+    const dayName=DAYS_SHORT[dt.getDay()];
+    const dateNum=parseInt(dk.split('-')[2]);
+    const isToday=dk===tk;const isSel=dk===curWkDay;
+    const pv=calcPlanDay(dk);const hasItems=MEAL_DEFS.some(m=>(weekPlan[dk]&&weekPlan[dk][m.id]||[]).length>0);
+    return`<button class="day-tab${isSel?' on':''}${isToday?' today-t':''}" onclick="selWkDay('${dk}')">
+      ${dayName}<br><span style="font-size:11px">${hasItems?r0(pv.p)+'g':'—'}</span>
+    </button>`;
+  }).join('');
+
+  // Selected day protein bar
+  const pv=calcPlanDay(curWkDay);
+  const pp=Math.min(100,(pv.p/120)*100),pc=pv.p>=115?'#4ade80':pv.p>=100?'#fbbf24':'#f87171';
+  document.getElementById('wk-day-label').textContent=fmtDate(curWkDay)+' plan';
+  document.getElementById('wk-pnum').textContent=r0(pv.p)+'g / 120g';
+  document.getElementById('wk-pbar').style.cssText=`width:${pp}%;background:${pc}`;
+
+  // Ingredient list for selected day (v7 style: food name, +/- text input, unit, protein, cost)
+  const dayPlan=weekPlan[curWkDay]||{};
+  let listHtml='';
+  let hasAny=false;
+  MEAL_DEFS.forEach(m=>{
+    const items=dayPlan[m.id]||[];
+    if(!items.length)return;
+    hasAny=true;
+    listHtml+=`<div class="week-sec-hd" style="color:${m.col}">${m.icon} ${m.label}</div>`;
+    items.forEach((it,i)=>{
+      const isLib=!!it.libId;const f=isLib?fd(it.libId):null;
+      const q=+it.qty||0;
+      const pr100=isLib?(f?f.pr*100:0):(it.pr100||0);
+      const prot=r1(pr100/100*q);
+      const unit=it.unit||'g';
+      listHtml+=`<div class="week-food-row">
+        <span class="week-food-name">${esc(it.name)}</span>
+        <div class="qrow">
+          <button class="qbtn" onclick="wkStep('${m.id}',${i},-1)" ${q<=0?'disabled':''}>−</button>
+          <input class="qty-inp" type="number" min="0" value="${q}" onchange="wkSetQty('${m.id}',${i},this.value)" oninput="wkSetQty('${m.id}',${i},this.value)">
+          <button class="qbtn" onclick="wkStep('${m.id}',${i},1)">+</button>
+        </div>
+        <span class="unit-lbl">${unit==='piece'?'pc':unit}</span>
+        <span style="font-size:12px;color:#555;min-width:50px">${prot}g pro</span>
+        <button class="delbtn" onclick="removeWkItem('${m.id}',${i})">✕</button>
+      </div>`;
+    });
+  });
+  if(!hasAny)listHtml=`<div class="hist-none" style="padding:10px 0">No ingredients planned for this day. Add from library or custom below.</div>`;
+  // Total row
+  if(hasAny)listHtml+=`<div style="display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid #2a2a2a;margin-top:4px;font-size:13px;font-weight:600">
+    <span style="color:#888">Plan total</span>
+    <span style="color:${pv.p>=115?'#4ade80':pv.p>=100?'#fbbf24':'#f87171'}">${r0(pv.p)}g protein · ₹${r0(pv.c)}</span>
+  </div>`;
+  document.getElementById('week-ingr-list').innerHTML=listHtml;
+
+  // Library pills for plan
+  const all=[...Object.entries(LIB),...Object.entries(custom)];
+  document.getElementById('wk-lib-pills').innerHTML=all.map(([id,f])=>`<button class="lib-pill" onclick="addWkLib('${id}')">${f.n}</button>`).join('');
+}
+
+function selWkDay(dk){curWkDay=dk;renderWeekPlan();}
+function wkStep(mId,i,d){
+  if(!weekPlan[curWkDay]||!weekPlan[curWkDay][mId])return;
+  weekPlan[curWkDay][mId][i].qty=Math.max(0,(+weekPlan[curWkDay][mId][i].qty||0)+d);
+  autosave();renderWeekPlan();
+}
+function wkSetQty(mId,i,val){
+  if(!weekPlan[curWkDay]||!weekPlan[curWkDay][mId])return;
+  weekPlan[curWkDay][mId][i].qty=Math.max(0,parseFloat(val)||0);
+  autosave();renderWeekPlan();
+}
+function removeWkItem(mId,i){
+  if(!weekPlan[curWkDay]||!weekPlan[curWkDay][mId])return;
+  weekPlan[curWkDay][mId].splice(i,1);autosave();renderWeekPlan();
+}
+function addWkLib(libId){
+  const f=fd(libId);if(!f)return;
+  const mId=(document.getElementById('in-meal')||{}).value||'snacks';
+  if(!weekPlan[curWkDay])weekPlan[curWkDay]={};
+  if(!weekPlan[curWkDay][mId])weekPlan[curWkDay][mId]=[];
+  weekPlan[curWkDay][mId].push({libId,name:f.n,qty:f.s||25,unit:f.u});
+  autosave();renderWeekPlan();
+}
+function addWkCustom(){
+  const g=id=>(document.getElementById(id)||{});
+  const name=g('wk-name').value?.trim();
+  const qty=parseFloat(g('wk-qty').value)||0;
+  const unit=g('wk-unit').value||'g';
+  const pr100=parseFloat(g('wk-pr').value)||0;
+  const kc100=parseFloat(g('wk-kc').value)||0;
+  const pp100=parseFloat(g('wk-pp').value)||0;
+  const err=document.getElementById('wk-err');
+  if(!name){err.textContent='Enter name';return;}
+  if(qty<=0){err.textContent='Enter qty';return;}
+  err.textContent='';
+  // pick meal from today's meal selector if visible
+  const mId='snacks';
+  if(!weekPlan[curWkDay])weekPlan[curWkDay]={};
+  if(!weekPlan[curWkDay][mId])weekPlan[curWkDay][mId]=[];
+  weekPlan[curWkDay][mId].push({name,qty,unit,pr100,kc100,pp100});
+  ['wk-name','wk-qty','wk-pr','wk-kc','wk-pp'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
+  autosave();renderWeekPlan();
+}
+function clearWeekDay(){
+  if(!curWkDay)return;
+  if(confirm('Clear all ingredients for '+fmtDate(curWkDay)+'?')){delete weekPlan[curWkDay];autosave();renderWeekPlan();}
+}
+function copyPlanToToday(){
+  const tk=todayKey();const dp=weekPlan[tk];
+  if(!dp||MEAL_DEFS.every(m=>!(dp[m.id]&&dp[m.id].length))){alert('No plan for today. Add ingredients in Weekly Plan first.');return;}
+  let added=0;
+  MEAL_DEFS.forEach(m=>{
+    (dp[m.id]||[]).forEach(it=>{
+      const ing=it.libId
+        ?{libId:it.libId,name:it.name,qty:it.qty,unit:it.unit}
+        :{name:it.name,qty:it.qty,unit:it.unit,pr100:it.pr100||0,kc100:it.kc100||0,carb100:0,fat100:0,fibre100:0,pp100:it.pp100||0};
+      todayData.meals[m.id].dishes.push({name:it.name,ingredients:[ing]});
+      added++;
+    });
+  });
+  autosave();showView('today');curMeal='breakfast';render();
+  if(added)alert('Copied '+added+' item'+(added!==1?'s':'')+' to Today!');
+}
+
+// ═══════════════════════════════════════════════════════════
+// HISTORY
+// ═══════════════════════════════════════════════════════════
+function renderHistory(){
+  const keys=last30Keys().reverse();let html='';
+  keys.forEach(key=>{
+    const entry=log[key];const isToday=key===todayKey();
+    if(!entry&&!isToday){html+=`<div class="hist-day" style="opacity:.3;cursor:default"><div class="hist-date">${fmtDate(key)}</div><div class="hist-p" style="color:#333;font-size:13px">—</div></div>`;return;}
+    const data=isToday?{meals:todayData.meals,staples}:entry;
+    const v=calcDayLog(data);const tp=r0(v.p);
+    const col=tp>=115?'#4ade80':tp>=100?'#fbbf24':'#f87171';const sel=selHistDate===key;
+    html+=`<div class="hist-day${sel?' sel':''}" onclick="selHist('${key}')">
+      <div class="hist-date">${fmtDate(key)}${isToday?' <span style="color:#4ade80;font-size:9px">TODAY</span>':''}</div>
+      <div class="hist-p" style="color:${col}">${tp}g</div>
+      <div class="hist-sub">₹${r0(v.c)} · ${r0(v.k)}kcal</div>
+    </div>`;
+  });
+  document.getElementById('hist-grid').innerHTML=html;
+  if(selHistDate)renderHistDetail(selHistDate);
+  else document.getElementById('hist-detail').innerHTML='<div class="hist-none">Tap a day to see details</div>';
+}
+function selHist(key){selHistDate=selHistDate===key?null:key;renderHistory();}
+function renderHistDetail(key){
+  const isToday=key===todayKey();
+  const entry=isToday?{meals:todayData.meals,staples}:log[key];
+  if(!entry){document.getElementById('hist-detail').innerHTML='';return;}
+  const v=calcDayLog(entry);const col=v.p>=115?'#4ade80':v.p>=100?'#fbbf24':'#f87171';
+  let html=`<div style="margin-bottom:10px"><div style="font-size:12px;font-weight:600;color:#888;margin-bottom:2px">${fmtDateFull(key)}${isToday?' — Today':''}</div>
+    <div style="font-size:19px;font-weight:700;color:${col}">${r1(v.p)}g <span style="font-size:12px;color:#555">· ${r0(v.k)} kcal · ${r1(v.fat)}g fat · ${r1(v.carb)}g carb · ${r1(v.fibre)}g fibre · ₹${r0(v.c)}</span></div></div>`;
+  if(entry.staples){const sc=entry.staples.filter(s=>s.checked);if(sc.length){html+=`<div style="font-size:11px;font-weight:600;color:#555;margin-bottom:4px;text-transform:uppercase">Staples</div>`;sc.forEach(s=>{const sv=calcRow(s);html+=`<div style="font-size:12px;color:#888;padding:2px 0">${s.name} ${s.qty}${s.unit==='piece'?'pc':s.unit} · ${r1(sv.p)}g pro</div>`;});}}
+  MEAL_DEFS.forEach(m=>{
+    const dishes=((entry.meals&&entry.meals[m.id]&&entry.meals[m.id].dishes)||[]);if(!dishes.length)return;
+    html+=`<div style="margin-top:10px"><div style="font-size:12px;font-weight:600;color:${m.col};margin-bottom:4px">${m.icon} ${m.label}</div>`;
+    dishes.forEach(dish=>{const dv=calcDish(dish);html+=`<div style="padding-left:8px;border-left:2px solid #2a2a2a;margin-bottom:5px"><div style="font-size:13px;font-weight:500;color:#ccc">${esc(dish.name)} <span style="font-size:11px;color:#555">· ${r1(dv.p)}g · ₹${r0(dv.c)}</span></div><div style="font-size:11px;color:#555;margin-top:1px">${(dish.ingredients||[]).map(i=>`${i.name} ${i.qty}${i.unit==='piece'?'pc':i.unit||'g'}`).join(' · ')||'no ingredients'}</div></div>`;});
+    html+=`</div>`;
+  });
+  document.getElementById('hist-detail').innerHTML=`<div class="hist-detail">${html}</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// VIEW
+// ═══════════════════════════════════════════════════════════
+function showView(v){
+  curView=v;
+  document.getElementById('view-today').style.display=v==='today'?'':'none';
+  document.getElementById('view-week').style.display=v==='week'?'':'none';
+  document.getElementById('view-history').style.display=v==='history'?'':'none';
+  document.querySelectorAll('.view-tab').forEach((t,i)=>t.classList.toggle('on',[v==='today',v==='week',v==='history'][i]));
+  if(v==='history')renderHistory();
+  if(v==='week')renderWeekPlan();
+}
+
+// ═══════════════════════════════════════════════════════════
+// EXPORT / IMPORT
+// ═══════════════════════════════════════════════════════════
+function exportData(){
+  const data={version:5,exportedAt:new Date().toISOString(),custom,log,weekPlan,staples,todayData};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='protein_planner_backup_'+todayKey()+'.json';a.click();
+}
+function importData(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(data.custom)custom=data.custom;
+      if(data.log)log=data.log;
+      if(data.weekPlan)weekPlan=data.weekPlan;
+      if(data.staples)staples=data.staples;
+      if(data.todayData)todayData=data.todayData;
+      LS.set(KEYS.cu,custom);LS.set(KEYS.lg,log);LS.set(KEYS.wk,weekPlan);LS.set(KEYS.st,staples);LS.set(KEYS.td,todayData);
+      alert('Backup restored successfully!');render();
+    }catch(err){alert('Error reading backup file: '+err.message);}
+  };
+  reader.readAsText(file);input.value='';
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+render();
+
+// PWA service worker (inline, for offline support when served)
+if('serviceWorker' in navigator){
+  const sw=`self.addEventListener('install',e=>e.waitUntil(caches.open('pp-v1').then(c=>c.addAll(['.']))));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));`;
+  const blob=new Blob([sw],{type:'application/javascript'});
+  navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
+}
+</script>
+</body>
+</html>
