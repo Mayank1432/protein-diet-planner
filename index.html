@@ -308,6 +308,7 @@ tr:hover td{background:#161616}
   </div>
 </div>
 
+<script src="js/storage.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════════
 // CONSTANTS
@@ -342,15 +343,6 @@ const DEFAULT_STAPLES = [
   {id:'st_milk', name:'Milk',       qty:250, unit:'ml',    pr:11/250,  kc:145/250, carb:12/250,  fat:8/250,  fibre:0,    pp:26/250,   checked:true,  mealId:'breakfast'},
   {id:'st_alm',  name:'Almonds',    qty:10,  unit:'g',     pr:0.21,    kc:5.76,    carb:0.22,    fat:0.49,   fibre:0.13, pp:80/100,   checked:false, mealId:'snacks'},
 ];
-
-// ═══════════════════════════════════════════════════════════
-// STORAGE
-// ═══════════════════════════════════════════════════════════
-const LS = {
-  get(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}},
-  set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
-};
-const KEYS = {td:'pptd_v5', cu:'ppc_v5', wk:'ppwk_v5', st:'ppst_v5', lg:'ppl_v5'};
 
 let custom   = LS.get(KEYS.cu) || {};
 let log      = LS.get(KEYS.lg) || {};
@@ -1050,7 +1042,7 @@ render();
 
 // PWA service worker (inline, for offline support when served)
 if('serviceWorker' in navigator){
-  const sw=`self.addEventListener('install',e=>e.waitUntil(caches.open('pp-v1').then(c=>c.addAll(['.']))));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));`;
+  const sw=`self.addEventListener('install',e=>e.waitUntil(caches.open('pp-v1').then(c=>c.addAll(['.','js/storage.js']))));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));`;
   const blob=new Blob([sw],{type:'application/javascript'});
   navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
 }
