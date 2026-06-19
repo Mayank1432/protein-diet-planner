@@ -15,6 +15,9 @@ The format is based on Keep a Changelog.
 -
 
 ### Fixed
+- Quick Add ingredients are now fully editable after being added.
+- Added `ensureEditableIngredient()` to centralize conversion of library-backed ingredients into editable snapshots.
+- Prevented nutrition values from being lost when editing library-backed ingredients.
 -
 
 ### Removed
