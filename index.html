@@ -393,34 +393,32 @@ function fmtDateFull(k){const[y,m,d]=k.split('-');const mn=['Jan','Feb','Mar','A
 function last30Keys(){const ks=[];for(let i=29;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);ks.push(d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()));}return ks;}
 
 // ═══════════════════════════════════════════════════════════
-// CALC  — all stored macros are PER-UNIT (per 1g/ml/piece)
-//         custom ingredients store values as per-100 (pr100 etc.)
+// CALC  — library/custom library values are PER-UNIT (per 1g/ml/piece)
+//         ad hoc pr100 fields are per-100 for g/ml and per-piece for pieces
 // ═══════════════════════════════════════════════════════════
 function zero(){return{p:0,k:0,carb:0,fat:0,fibre:0,c:0};}
 function addV(a,b){return{p:a.p+b.p,k:a.k+b.k,carb:a.carb+b.carb,fat:a.fat+b.fat,fibre:a.fibre+b.fibre,c:a.c+b.c};}
+function qtyFactor(unit,qty){const q=+qty||0;return unit==='piece'?q:q/100;}
+function calcFromP100(item){
+  const f=qtyFactor(item.unit,item.qty);
+  return{p:(item.pr100||0)*f,k:(item.kc100||0)*f,carb:(item.carb100||0)*f,fat:(item.fat100||0)*f,fibre:(item.fibre100||0)*f,c:(item.pp100||0)*f};
+}
+function calcFromPerUnit(food,qty){
+  const q=+qty||0;
+  return{p:(food.pr||0)*q,k:(food.kc||0)*q,carb:(food.carb||0)*q,fat:(food.fat||0)*q,fibre:(food.fibre||0)*q,c:(food.pp||0)*q};
+}
 
 function calcRow(r){
   // r has per-unit fields: pr,kc,carb,fat,fibre,pp
-  const q=+r.qty||0;
-  return{p:(r.pr||0)*q,k:(r.kc||0)*q,carb:(r.carb||0)*q,fat:(r.fat||0)*q,fibre:(r.fibre||0)*q,c:(r.pp||0)*q};
+  return calcFromPerUnit(r,r.qty);
 }
 
 function calcIngr(ing){
   if(ing.libId){
     const f=fd(ing.libId);if(!f)return zero();
-    const q=+ing.qty||0;
-    return{p:f.pr*q,k:f.kc*q,carb:(f.carb||0)*q,fat:(f.fat||0)*q,fibre:(f.fibre||0)*q,c:f.pp*q};
+    return calcFromPerUnit(f,ing.qty);
   }
-  // custom: values stored as per100 → divide by 100
-  const q=+ing.qty||0;
-  return{
-    p: (ing.pr100||0)/100*q,
-    k: (ing.kc100||0)/100*q,
-    carb:(ing.carb100||0)/100*q,
-    fat: (ing.fat100||0)/100*q,
-    fibre:(ing.fibre100||0)/100*q,
-    c:  (ing.pp100||0)/100*q,
-  };
+  return calcFromP100(ing);
 }
 
 function calcDish(dish){let t=zero();(dish.ingredients||[]).forEach(i=>t=addV(t,calcIngr(i)));return t;}
@@ -449,10 +447,7 @@ function last30Avg(){const ks=last30Keys().filter(k=>log[k]);return ks.length?Ma
 function calcPlanDay(dateKey){
   let t=zero();
   const dp=weekPlan[dateKey]||{};
-  MEAL_DEFS.forEach(m=>(dp[m.id]||[]).forEach(it=>{
-    if(it.libId){const f=fd(it.libId);if(f){const q=+it.qty||0;t=addV(t,{p:f.pr*q,k:f.kc*q,carb:(f.carb||0)*q,fat:(f.fat||0)*q,fibre:(f.fibre||0)*q,c:f.pp*q});}}
-    else{const q=+it.qty||0;t=addV(t,{p:(it.pr100||0)/100*q,k:(it.kc100||0)/100*q,carb:(it.carb100||0)/100*q,fat:(it.fat100||0)/100*q,fibre:(it.fibre100||0)/100*q,c:(it.pp100||0)/100*q});}
-  }));
+  MEAL_DEFS.forEach(m=>(dp[m.id]||[]).forEach(it=>{t=addV(t,calcIngr(it));}));
   return t;
 }
 
@@ -742,8 +737,8 @@ function renderLibPills(){
 function renderCostTable(){
   const all=[...Object.entries(LIB),...Object.entries(custom)];
   document.getElementById('cost-body').innerHTML=all.map(([id,f])=>{
-    const pr100=f.pr*100,pp100=f.pp*100;
-    return`<tr><td>${f.n}</td><td>${r1(pr100)}g</td><td>₹${r1(pp100)}</td><td>${pr100>0?'₹'+(pp100/pr100).toFixed(2)+'/g':'—'}</td></tr>`;
+    const displayProtein=pu2p100(f.pr||0,f.u),displayCost=pu2p100(f.pp||0,f.u);
+    return`<tr><td>${f.n}</td><td>${r1(displayProtein)}g</td><td>₹${r1(displayCost)}</td><td>${displayProtein>0?'₹'+(displayCost/displayProtein).toFixed(2)+'/g':'—'}</td></tr>`;
   }).join('');
 }
 
@@ -817,7 +812,7 @@ function addCustomIngr(){
   if(qty<=0){err.textContent='Enter a quantity';return;}
   err.textContent='';
   const id='c'+(++uid);const step=unit==='piece'?1:unit==='ml'?50:25;
-  custom[id]={n:name,u:unit,s:step,max:null,pp:pp100/100,pr:pr100/100,kc:kc100/100,carb:carb100/100,fat:fat100/100,fibre:fibre100/100,t:type};
+  custom[id]={n:name,u:unit,s:step,max:null,pp:p100pu(pp100,unit),pr:p100pu(pr100,unit),kc:p100pu(kc100,unit),carb:p100pu(carb100,unit),fat:p100pu(fat100,unit),fibre:p100pu(fibre100,unit),t:type};
   todayData.meals[mId].dishes.push({name,ingredients:[{libId:id,name,qty,unit}]});
   curMeal=mId;
   ['in-name','in-pr','in-kc','in-cb','in-ft','in-fb','in-pp','in-qty'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
@@ -861,10 +856,8 @@ function renderWeekPlan(){
     hasAny=true;
     listHtml+=`<div class="week-sec-hd" style="color:${m.col}">${m.icon} ${m.label}</div>`;
     items.forEach((it,i)=>{
-      const isLib=!!it.libId;const f=isLib?fd(it.libId):null;
       const q=+it.qty||0;
-      const pr100=isLib?(f?f.pr*100:0):(it.pr100||0);
-      const prot=r1(pr100/100*q);
+      const prot=r1(calcIngr(it).p);
       const unit=it.unit||'g';
       listHtml+=`<div class="week-food-row">
         <span class="week-food-name">${esc(it.name)}</span>
