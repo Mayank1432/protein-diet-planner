@@ -311,8 +311,10 @@ tr:hover td{background:#161616}
 <script src="js/storage.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════════
-// CONSTANTS
+// CONSTANTS & DEFAULT DATA
 // ═══════════════════════════════════════════════════════════
+// Storage globals KEYS and LS are defined in js/storage.js.
+// Keep persistence wiring there so index.html stays focused on app behavior.
 const WB = 1500;
 const MEAL_DEFS = [
   {id:'breakfast', label:'Breakfast', icon:'🌅', col:'#93c5fd'},
@@ -323,7 +325,7 @@ const MEAL_DEFS = [
 const DAYS_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
 // ═══════════════════════════════════════════════════════════
-// FOOD LIBRARY  (all per-unit: per 1g / per 1ml / per 1piece)
+// FOOD LIBRARY  (per-unit: per 1g / per 1ml / per 1 piece)
 // ═══════════════════════════════════════════════════════════
 const LIB = {
   oats:    {n:'Oats',                 u:'g',  s:40, max:40,  pp:270/1000, pr:5/40,   kc:156/40,  carb:27.4/40, fat:2.8/40,  fibre:4/40,  t:'v'},
@@ -336,7 +338,7 @@ const LIB = {
 };
 
 // ═══════════════════════════════════════════════════════════
-// STAPLES  (per-unit values)
+// DEFAULT STAPLES  (per-unit values)
 // ═══════════════════════════════════════════════════════════
 const DEFAULT_STAPLES = [
   {id:'st_egg',  name:'Whole egg',  qty:5,   unit:'piece', pr:6,       kc:78,      carb:0.6,     fat:5,      fibre:0,    pp:250/30,   checked:true,  mealId:'breakfast'},
@@ -344,6 +346,11 @@ const DEFAULT_STAPLES = [
   {id:'st_alm',  name:'Almonds',    qty:10,  unit:'g',     pr:0.21,    kc:5.76,    carb:0.22,    fat:0.49,   fibre:0.13, pp:80/100,   checked:false, mealId:'snacks'},
 ];
 
+// ═══════════════════════════════════════════════════════════
+// APP STATE
+// ═══════════════════════════════════════════════════════════
+// Local Storage keys and JSON read/write behavior live in js/storage.js.
+// Do not duplicate KEYS or LS in this file.
 let custom   = LS.get(KEYS.cu) || {};
 let log      = LS.get(KEYS.lg) || {};
 let weekPlan = LS.get(KEYS.wk) || {};      // {dateKey: {mealId: [{name,qty,unit,pr100,kc100,carb100,fat100,fibre100,pp100,libId?}]}}
@@ -352,10 +359,6 @@ let uid      = Object.keys(custom).length;
 
 function fd(id){return LIB[id]||custom[id];}
 function clamp(id,v){const f=fd(id);return f&&f.max?Math.min(f.max,Math.max(0,v)):Math.max(0,v);}
-
-// ═══════════════════════════════════════════════════════════
-// TODAY STATE
-// ═══════════════════════════════════════════════════════════
 function blankDay(){const m={};MEAL_DEFS.forEach(md=>{m[md.id]={dishes:[],collapsed:false};});return{meals:m};}
 let todayData = LS.get(KEYS.td) || blankDay();
 MEAL_DEFS.forEach(md=>{if(!todayData.meals[md.id])todayData.meals[md.id]={dishes:[],collapsed:false};});
@@ -364,7 +367,7 @@ let curView='today', curMeal='breakfast', selHistDate=null, curWkDay=null;
 let dishForms={};MEAL_DEFS.forEach(md=>{dishForms[md.id]={open:false,name:'',ingrOpen:-1};});
 
 // ═══════════════════════════════════════════════════════════
-// AUTO-SAVE  (debounced 800ms)
+// PERSISTENCE & AUTOSAVE
 // ═══════════════════════════════════════════════════════════
 let saveTimer=null;
 function autosave(){
@@ -383,7 +386,7 @@ function autosave(){
 }
 
 // ═══════════════════════════════════════════════════════════
-// DATE HELPERS
+// UTILITIES
 // ═══════════════════════════════════════════════════════════
 function todayKey(){const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
 function pad(n){return n<10?'0'+n:''+n;}
@@ -393,9 +396,10 @@ function fmtDateFull(k){const[y,m,d]=k.split('-');const mn=['Jan','Feb','Mar','A
 function last30Keys(){const ks=[];for(let i=29;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);ks.push(d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()));}return ks;}
 
 // ═══════════════════════════════════════════════════════════
-// CALC  — library/custom library values are PER-UNIT (per 1g/ml/piece)
-//         ad hoc pr100 fields are per-100 for g/ml and per-piece for pieces
+// NUTRITION CALCULATIONS
 // ═══════════════════════════════════════════════════════════
+// Library/custom library values are per-unit: per 1g, 1ml, or 1 piece.
+// Editable pr100/kc100/pp100 fields are per-100 for g/ml, and per-piece for piece.
 function zero(){return{p:0,k:0,carb:0,fat:0,fibre:0,c:0};}
 function addV(a,b){return{p:a.p+b.p,k:a.k+b.k,carb:a.carb+b.carb,fat:a.fat+b.fat,fibre:a.fibre+b.fibre,c:a.c+b.c};}
 function qtyFactor(unit,qty){const q=+qty||0;return unit==='piece'?q:q/100;}
@@ -452,7 +456,7 @@ function calcPlanDay(dateKey){
 }
 
 // ═══════════════════════════════════════════════════════════
-// HELPERS
+// DISPLAY UTILITIES
 // ═══════════════════════════════════════════════════════════
 function r1(n){return Math.round((+n||0)*10)/10;}
 function r0(n){return Math.round(+n||0);}
@@ -463,7 +467,7 @@ function pu2p100(pu,unit){return unit==='piece'?r1(pu):r1(pu*100);}
 function p100pu(v,unit){const n=parseFloat(v)||0;return unit==='piece'?n:n/100;}
 
 // ═══════════════════════════════════════════════════════════
-// RENDER BARS + METRICS
+// RENDERING: METRICS
 // ═══════════════════════════════════════════════════════════
 function renderBars(){
   const tot=calcAll();const wk=last7Cost();const over=wk>WB+30;
@@ -482,7 +486,7 @@ function renderBars(){
 }
 
 // ═══════════════════════════════════════════════════════════
-// STAPLES
+// RENDERING: STAPLES
 // ═══════════════════════════════════════════════════════════
 function renderStaples(){
   document.getElementById('staples-list').innerHTML=staples.map((s,i)=>{
@@ -507,7 +511,7 @@ function stQty(i,v){staples[i].qty=Math.max(0,parseFloat(v)||0);autosave();rende
 function stMeal(i,v){staples[i].mealId=v;autosave();renderAllIngr();}
 
 // ═══════════════════════════════════════════════════════════
-// MEAL TABS
+// RENDERING: MEAL TABS
 // ═══════════════════════════════════════════════════════════
 function renderMealTabs(){
   document.getElementById('meal-tabs').innerHTML=MEAL_DEFS.map(m=>{
@@ -517,7 +521,7 @@ function renderMealTabs(){
 }
 
 // ═══════════════════════════════════════════════════════════
-// MEAL PANELS
+// RENDERING: MEAL PANELS
 // ═══════════════════════════════════════════════════════════
 function renderMealPanels(){
   let html='';
@@ -595,7 +599,7 @@ function renderIngrForm(mId,di){
 }
 
 // ═══════════════════════════════════════════════════════════
-// ALL INGREDIENTS TABLE  (fully editable)
+// RENDERING: ALL INGREDIENTS TABLE
 // ═══════════════════════════════════════════════════════════
 function renderAllIngr(){
   let rows='';
@@ -604,7 +608,7 @@ function renderAllIngr(){
     if(!s.checked)return;
     const v=calcRow(s);
     const meal=MEAL_DEFS.find(m=>m.id===s.mealId);
-    // display per-100 values
+    // Display per-100 values for g/ml; pieces stay per-piece.
     const pr100=pu2p100(s.pr,s.unit), kc100=pu2p100(s.kc,s.unit);
     const cb100=pu2p100(s.carb||0,s.unit), ft100=pu2p100(s.fat||0,s.unit), fb100=pu2p100(s.fibre||0,s.unit);
     const pp100=pu2p100(s.pp,s.unit);
@@ -637,7 +641,7 @@ function renderAllIngr(){
         const iv=calcIngr(ing);
         const unit=ing.unit||'g';
         const isLib=!!ing.libId;
-        // get per-100 display values
+        // Display per-100 values for g/ml; pieces stay per-piece.
         let pr100,kc100,cb100,ft100,fb100,pp100;
         if(isLib){
           const f=fd(ing.libId)||{};
@@ -682,7 +686,7 @@ function renderAllIngr(){
   document.getElementById('tc').textContent='₹'+r0(tot.c);
 }
 
-// staple update helpers
+// Staple update helpers
 function updateSt(si,field,val){staples[si][field]=val;autosave();}
 function stQtyRow(si,val){staples[si].qty=Math.max(0,parseFloat(val)||0);autosave();renderBars();renderAllIngr();}
 function updateStPer(si,field,val){
@@ -691,7 +695,11 @@ function updateStPer(si,field,val){
   autosave();renderAllIngr();renderBars();
 }
 
-// ingredient update helpers — FIXED: only update the changed field, never touch others
+// ═══════════════════════════════════════════════════════════
+// INGREDIENT EDIT HELPERS
+// ═══════════════════════════════════════════════════════════
+// Quantity-only edits preserve libId. Direct edits detach library-backed
+// ingredients into editable snapshots with copied nutrition values.
 function ensureEditableIngredient(ing){
   if(!ing||ing.pr100!==undefined)return ing;
   if(ing.libId){
@@ -732,7 +740,7 @@ function updateIngr100(mId,di,ii,field,val){
 }
 
 // ═══════════════════════════════════════════════════════════
-// LIB PILLS & COST TABLE
+// RENDERING: LIBRARY PILLS & COST TABLE
 // ═══════════════════════════════════════════════════════════
 function renderLibPills(){
   const all=[...Object.entries(LIB),...Object.entries(custom)];
@@ -747,7 +755,7 @@ function renderCostTable(){
 }
 
 // ═══════════════════════════════════════════════════════════
-// FULL RENDER
+// RENDERING: FULL PAGE
 // ═══════════════════════════════════════════════════════════
 function render(){
   document.getElementById('todayLabel').textContent='Today: '+fmtDateFull(todayKey());
@@ -755,7 +763,7 @@ function render(){
 }
 
 // ═══════════════════════════════════════════════════════════
-// MEAL ACTIONS
+// TODAY ACTIONS
 // ═══════════════════════════════════════════════════════════
 function switchMeal(id){curMeal=id;MEAL_DEFS.forEach(m=>{dishForms[m.id].ingrOpen=-1;});render();}
 function toggleMeal(id){todayData.meals[id].collapsed=!todayData.meals[id].collapsed;autosave();renderMealPanels();}
@@ -824,7 +832,7 @@ function addCustomIngr(){
 }
 
 // ═══════════════════════════════════════════════════════════
-// WEEKLY PLAN  (v7 style: day tabs, ingredient list with +/- and text box per ingredient)
+// WEEKLY PLANNER
 // ═══════════════════════════════════════════════════════════
 function initWkDay(){if(!curWkDay)curWkDay=todayKey();}
 
@@ -993,7 +1001,7 @@ function renderHistDetail(key){
 }
 
 // ═══════════════════════════════════════════════════════════
-// VIEW
+// VIEW SWITCHING
 // ═══════════════════════════════════════════════════════════
 function showView(v){
   curView=v;
@@ -1033,11 +1041,14 @@ function importData(input){
 }
 
 // ═══════════════════════════════════════════════════════════
-// INIT
+// APP INIT
 // ═══════════════════════════════════════════════════════════
 render();
 
-// PWA service worker (inline, for offline support when served)
+// ═══════════════════════════════════════════════════════════
+// PWA SETUP
+// ═══════════════════════════════════════════════════════════
+// Inline service worker for offline support when served.
 if('serviceWorker' in navigator){
   const sw=`self.addEventListener('install',e=>e.waitUntil(caches.open('pp-v1').then(c=>c.addAll(['.','js/storage.js']))));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));`;
   const blob=new Blob([sw],{type:'application/javascript'});
