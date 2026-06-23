@@ -394,6 +394,14 @@ function getWeekDays(){const t=new Date();const dow=t.getDay();const mon=new Dat
 function fmtDate(k){const[y,m,d]=k.split('-');const mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return mn[+m-1]+' '+parseInt(d);}
 function fmtDateFull(k){const[y,m,d]=k.split('-');const mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];const dt=new Date(+y,+m-1,+d);return DAYS_SHORT[dt.getDay()]+', '+mn[+m-1]+' '+parseInt(d)+' '+y;}
 function last30Keys(){const ks=[];for(let i=29;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);ks.push(d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()));}return ks;}
+function cloneIngredientForPlanner(ingredient){
+  if(!ingredient||typeof ingredient!=='object')return ingredient;
+  return JSON.parse(JSON.stringify(ingredient));
+}
+function cloneIngredientListForPlanner(list){
+  if(!Array.isArray(list))return [];
+  return list.map(cloneIngredientForPlanner);
+}
 
 // ═══════════════════════════════════════════════════════════
 // NUTRITION CALCULATIONS
@@ -949,11 +957,8 @@ function copyPlanToToday(){
   if(!dp||MEAL_DEFS.every(m=>!(dp[m.id]&&dp[m.id].length))){alert('No plan for today. Add ingredients in Weekly Plan first.');return;}
   let added=0;
   MEAL_DEFS.forEach(m=>{
-    (dp[m.id]||[]).forEach(it=>{
-      const ing=it.libId
-        ?{libId:it.libId,name:it.name,qty:it.qty,unit:it.unit}
-        :{name:it.name,qty:it.qty,unit:it.unit,pr100:it.pr100||0,kc100:it.kc100||0,carb100:0,fat100:0,fibre100:0,pp100:it.pp100||0};
-      todayData.meals[m.id].dishes.push({name:it.name,ingredients:[ing]});
+    cloneIngredientListForPlanner(dp[m.id]||[]).forEach(ing=>{
+      todayData.meals[m.id].dishes.push({name:ing.name,ingredients:[ing]});
       added++;
     });
   });

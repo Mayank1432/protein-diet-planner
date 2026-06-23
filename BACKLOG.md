@@ -5,6 +5,7 @@
 - [x] Quick Add ingredients should remain editable
 - [ ] Piece-based custom ingredients calculate incorrectly because nutrition fields are treated as per-100 instead of per-piece.
 - [ ] Allow custom ingredients to enter nutrition for any serving amount, then convert automatically to the app's internal calculation format.
+- [ ] Decouple History logging from autosave/copy actions so Weekly-to-Today copy updates Today only and does not automatically write to History.
 
 ## 🟡 Refactoring
 - [ ] Remove duplicate ingredient update logic
