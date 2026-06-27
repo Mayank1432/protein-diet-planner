@@ -2,7 +2,7 @@
 
 ## Current Architecture
 
-Protein Diet Planner is a static client-side PWA built with HTML, CSS, and Vanilla JavaScript. It has no backend, database, runtime framework, or runtime build step.
+NutriFlow is a static client-side PWA built with HTML, CSS, and Vanilla JavaScript. It has no backend, database, runtime framework, or runtime build step.
 
 Runtime files:
 
@@ -12,7 +12,7 @@ Runtime files:
 - `sw.js`: external service worker and app-shell cache.
 - `icons/`: install icons.
 
-The app is hosted through GitHub Pages and can be installed as a PWA. The current service-worker cache is `protein-planner-v0.5.5`.
+The app is hosted through GitHub Pages and can be installed as a PWA. The current service-worker cache is `nutriflow-v0.6.0`.
 
 Playwright and npm are development-only QA tooling. They do not change the plain HTML/CSS/JavaScript runtime.
 
@@ -138,7 +138,7 @@ Normal autosave persists working state. History logging is intentionally separat
 - `manifest.json` provides install metadata.
 - `sw.js` caches the app shell for offline reload.
 - `tests/pwa-smoke.spec.js` verifies hosted or local service-worker registration, cache creation, and offline reload.
-- The current cache name is `protein-planner-v0.5.5`.
+- The current cache name is `nutriflow-v0.6.0`.
 
 When `index.html` changes, the cache name in `sw.js` and the expected name in the PWA smoke test must be updated together. `skipWaiting()` and `clients.claim()` are not part of the approved update strategy.
 
@@ -210,7 +210,7 @@ Each phase should be testable before the next feature area is ported.
 
 The React prototype may live in a dedicated subfolder such as `react-app/` in a later task. Development should use small feature branches while `main` and the deployed vanilla app stay stable.
 
-GitHub Pages serves this project from `/protein-diet-planner/`, so Vite will need the correct base configuration. The current service worker remains unchanged during planning and feature porting. The React PWA strategy and production switch belong to the final deploy task.
+GitHub Pages will serve this project from `/nutriflow/`, so Vite will need the correct base configuration. The current service worker remains unchanged during planning and feature porting. The React PWA strategy and production switch belong to the final deploy task.
 
 Before switching production:
 

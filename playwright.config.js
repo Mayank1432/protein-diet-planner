@@ -5,7 +5,7 @@ module.exports = defineConfig({
   timeout: 60000,
   reporter: [['list']],
   use: {
-    baseURL: process.env.PWA_BASE_URL || 'https://mayank1432.github.io/protein-diet-planner/',
+    baseURL: process.env.PWA_BASE_URL || 'https://mayank1432.github.io/nutriflow/',
     trace: 'on-first-retry'
   },
   projects: [

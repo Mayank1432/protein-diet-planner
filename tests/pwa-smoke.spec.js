@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
-const CACHE_NAME = 'protein-planner-v0.5.5';
+const CACHE_NAME = 'nutriflow-v0.6.0';
 const TEST_KEY = 'pwa_smoke_test_key';
 
 function absoluteUrl(baseURL, path) {
@@ -18,8 +18,8 @@ function homeCachePaths(baseURL) {
   return new Set([
     '/',
     '/index.html',
-    '/protein-diet-planner/',
-    '/protein-diet-planner/index.html',
+    '/nutriflow/',
+    '/nutriflow/index.html',
     basePathWithSlash,
     `${basePathWithSlash}index.html`,
     basePathWithoutSlash,
@@ -39,13 +39,13 @@ test('hosted PWA app shell works online and offline', async ({ page, context, re
   });
 
   await page.goto('./', { waitUntil: 'networkidle' });
-  await expect(page.getByRole('heading', { name: 'Protein Diet Planner' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'NutriFlow' })).toBeVisible();
 
   const manifestResponse = await request.get(absoluteUrl(baseURL, './manifest.json'));
   expect(manifestResponse.status()).toBe(200);
   const manifest = await manifestResponse.json();
-  expect(manifest.name).toBe('Protein Diet Planner');
-  expect(manifest.short_name).toBe('Protein Planner');
+  expect(manifest.name).toBe('NutriFlow');
+  expect(manifest.short_name).toBe('NutriFlow');
   expect(manifest.start_url).toBeTruthy();
   expect(manifest.scope).toBeTruthy();
   expect(manifest.display).toBe('standalone');
@@ -89,7 +89,7 @@ test('hosted PWA app shell works online and offline', async ({ page, context, re
 
   await context.setOffline(true);
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await expect(page.getByRole('heading', { name: 'Protein Diet Planner' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'NutriFlow' })).toBeVisible();
   await context.setOffline(false);
   await page.evaluate(key => localStorage.removeItem(key), TEST_KEY);
 

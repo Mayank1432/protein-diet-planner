@@ -1,6 +1,6 @@
-# Protein Diet Planner Roadmap
+# NutriFlow Roadmap
 
-Protein Diet Planner is moving from a stable Vanilla JavaScript PWA toward a staged React/Vite architecture. The current app remains the production base until migration tasks are planned, implemented, reviewed, and live-checked.
+NutriFlow is moving from a stable Vanilla JavaScript PWA toward a staged React/Vite architecture. The current app remains the production base until migration tasks are planned, implemented, reviewed, and live-checked.
 
 ## Current Direction
 
@@ -72,7 +72,7 @@ The internal dish model remains a compatibility concern until an approved migrat
 ### Task 12 - PWA Deploy + QA
 
 - GitHub Pages deployment.
-- Correct Vite base configuration for `/protein-diet-planner/`.
+- Correct Vite base configuration for `/nutriflow/`.
 - Manifest, service worker, and cache verification.
 - Local and hosted PWA smoke tests.
 - Android installed-PWA check.

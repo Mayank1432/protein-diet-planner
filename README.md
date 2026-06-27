@@ -1,6 +1,6 @@
-# Protein Diet Planner
+# NutriFlow
 
-Protein Diet Planner is a lightweight, browser-based app for tracking daily protein, nutrition, and food cost. It runs entirely in the browser, stores data in Local Storage, and requires no account, backend, or runtime build step.
+NutriFlow is a lightweight, browser-based app for tracking daily protein, nutrition, and food cost. It runs entirely in the browser, stores data in Local Storage, and requires no account, backend, or runtime build step.
 
 ## Features
 
@@ -29,7 +29,7 @@ The runtime app has no backend, framework, or build step. A staged React/Vite mi
 ## Repository
 
 ```text
-Protein Diet Planner/
+nutriflow/
 |-- index.html              # Runtime application
 |-- js/storage.js           # Local Storage keys and helper
 |-- manifest.json           # PWA manifest
@@ -75,7 +75,7 @@ npm run test:pwa
 Run against GitHub Pages:
 
 ```powershell
-$env:PWA_BASE_URL="https://mayank1432.github.io/protein-diet-planner/"
+$env:PWA_BASE_URL="https://mayank1432.github.io/nutriflow/"
 npm run test:pwa
 ```
 

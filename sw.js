@@ -1,4 +1,4 @@
-const CACHE_NAME = 'protein-planner-v0.5.5';
+const CACHE_NAME = 'nutriflow-v0.6.0';
 
 const APP_SHELL = [
   './',

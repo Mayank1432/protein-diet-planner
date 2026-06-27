@@ -1,6 +1,6 @@
 {
-  "name": "Protein Diet Planner",
-  "short_name": "Protein Planner",
+  "name": "NutriFlow",
+  "short_name": "NutriFlow",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

@@ -12,6 +12,9 @@ The format is based on Keep a Changelog.
 -
 
 ### Changed
+- Renamed current app and product references from Protein Diet Planner to NutriFlow.
+- Updated the planned GitHub Pages slug from `protein-diet-planner` to `nutriflow`.
+- Updated PWA metadata and cache naming for NutriFlow.
 - Refreshed project documentation for the current meal-first Today UI, legacy staple normalization, external PWA setup, and planned React/Vite migration.
 - Documented Main Chat, Sprint Chat, Codex, and QA Chat workflow responsibilities and approval boundaries.
 - Documented the parallel React/Vite migration strategy and refined the migration roadmap.

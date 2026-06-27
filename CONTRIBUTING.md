@@ -1,4 +1,4 @@
-# Contributing to Protein Diet Planner
+# Contributing to NutriFlow
 
 Keep changes focused, preserve existing user data, and treat the repository documentation as the source of truth.
 

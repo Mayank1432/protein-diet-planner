@@ -1,6 +1,6 @@
 # Architecture Decisions (ADR)
 
-This document records important technical decisions made during the development of **Protein Diet Planner**.
+This document records important technical decisions made during the development of **NutriFlow**.
 
 Each decision includes:
 - The problem
@@ -133,7 +133,7 @@ Implementing features immediately.
 
 ### Decision
 
-Protein Diet Planner started as a plain HTML/CSS/Vanilla JavaScript app with Local Storage.
+The project started as a plain HTML/CSS/Vanilla JavaScript app with Local Storage.
 
 The project will continue short-term bug fixes in the current vanilla app, but the long-term product direction is to migrate toward a modern React + Vite + TypeScript PWA after core data/editing bugs are fixed.
 
